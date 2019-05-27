@@ -1,8 +1,4 @@
-.. _worldmap:
-
-========
-WorldMap
-========
+# WorldMap
 
 By using the WorldMap optional application, GeoNode is extended with the following additional features:
 
@@ -11,11 +7,9 @@ By using the WorldMap optional application, GeoNode is extended with the followi
     * the "Add Layers" dialog comes with a "Search" tab which uses Hypermap Registry (Hypermap) as a catalogue of remote and local layers. Hypermap is a requirement when using the WorldMap contrib application
 * a gazetteer application: it is possible to add a given layer to a gazetteer. The gazetteer can be checked using the map client. When a layer is part of the gazetter it is possible to include it in a general gazetteer or in a specific project one. It is possible to search place names in the gazetteer by date range, in which case it is necessary to specify the layer attributes for the start and end depict dates
 
-Installation
-============
+## Installation
 
-Requirements
-------------
+### Requirements
 
 We are assuming a Ubuntu 16.04.1 LTS development environment, but these instructions can be adapted to any recent Linux distributions::
 
@@ -29,8 +23,7 @@ We are assuming a Ubuntu 16.04.1 LTS development environment, but these instruct
     export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
     export PATH=$JAVA_HOME'bin/java':$PATH
 
-Virtual environment creation and installation of Python packages
-----------------------------------------------------------------
+### Virtual environment creation and installation of Python packages
 
 Create and activate the virtual environment::
 
@@ -71,24 +64,21 @@ You can install GeoNode WorldMap in two different ways:
 1) By installing GeoNode itself
 2) By using the recommended way of a geonode-project
 
-GeoNode/WorldMap without a geonode-project
-------------------------------------------
+### GeoNode/WorldMap without a geonode-project
 
 Add the module in the `INSTALLED_APPS` section of the settings file:
 
-.. code-block:: python
-
+```Python
     INSTALLED_APPS = (
         ...,
         'geonode.contrib.worldmap',
         ...
     )
-
+```
 
 Here is a typical extract of the settings that must be used for GeoNode to use the worldmap module:
 
-.. code-block:: python
-
+```Python
     GEONODE_CLIENT_HOOKSET = "geonode.contrib.worldmap.hooksets.WorldMapHookSet"
     CORS_ORIGIN_WHITELIST = (
         HOSTNAME
@@ -159,11 +149,11 @@ Here is a typical extract of the settings that must be used for GeoNode to use t
             baselayers = MAP_BASELAYERS
             MAP_BASELAYERS = [PUBLIC_GEOSERVER]
             MAP_BASELAYERS.extend(baselayers)
-
+```
 
 Add the `WORLDMAP` url patterna to the `urls`
 
-.. code-block:: python
+```Python
     ...
 
     # WorldMap
@@ -171,12 +161,11 @@ Add the `WORLDMAP` url patterna to the `urls`
         urlpatterns += [url(r'', include('geonode.contrib.worldmap.wm_extra.urls', namespace='worldmap'))]
         urlpatterns += [url(r'', include('geonode.contrib.worldmap.gazetteer.urls', namespace='gazetteer'))]
         urlpatterns += [url(r'', include('geonode.contrib.worldmap.mapnotes.urls', namespace='mapnotes'))]
-
+```
 
 Add the `USE_WORLDMAP` variable to the `context_processors`
 
-.. code-block:: python
-
+```Python
         ...
         USE_WORLDMAP=settings.USE_WORLDMAP,
     )
@@ -232,12 +221,11 @@ Add the `USE_WORLDMAP` variable to the `context_processors`
         defaults['HYPERMAP_REGISTRY_URL'] = settings.HYPERMAP_REGISTRY_URL
 
     return defaults
-
+```
 
 Add the `Gazetter` links to the Metadata Editor Panel into the `layer_detail.html` template
 
-.. code-block:: html
-
+```HTML
     <i class="fa fa-list-alt fa-3x"></i>
     <h4>{% trans "Metadata" %}</h4>
     <a class="btn btn-default btn-block btn-xs" href="{% url "layer_metadata" resource.service_typename %}">{% trans "Wizard" %}</a>
@@ -248,12 +236,11 @@ Add the `Gazetter` links to the Metadata Editor Panel into the `layer_detail.htm
       <a class="btn btn-default btn-block btn-xs" href="/gazetteer/edit/{{ resource.service_typename }}">{% trans "Gazetteer" %}</a>
     {% endif %}
     </div>
-
+```
 
 Add the `Gazetter` attributes to the Metadata Editor View into the `layers/templates/layouts/panel.html` template
 
-.. code-block:: html
-
+```HTML
     <div>
         {{ attribute_form.management_form }}
         <table class="table table-striped table-bordered table-condensed">
@@ -285,10 +272,9 @@ Add the `Gazetter` attributes to the Metadata Editor View into the `layers/templ
             {% endfor %}
         </table>
       </div>
+```
 
-
-GeoNode/WorldMap with a geonode-project
----------------------------------------
+### GeoNode/WorldMap with a geonode-project
 
 You will use a geonode-project in order to separate the customization of your instance from GeoNode.
 
@@ -304,8 +290,7 @@ Create a local_settings.py by copying the included template::
     make build
     paver setup
 
-Start the Server
-----------------
+### Start the Server
 
 Start GeoNode with Worldmap using pavement::
 
@@ -317,8 +302,7 @@ To upload layers you can login with the default GeoNode administrative account:
 user: admin
 password: admin
 
-Configuring instance for production
------------------------------------
+### Configuring instance for production
 
 Please follow best practices suggested by GeoNode documentation:
 
@@ -328,8 +312,7 @@ Remember to add the ip of your server in ALLOWED_HOSTS in the local_settings.py 
 
     ALLOWED_HOSTS = ['localhost', '128.31.22.73', ]
 
-Hypermap Registry
-=================
+## Hypermap Registry
 
 GeoNode with the WorldMap contribute module requires a Hypermap Registry (Hypermap) running instance.
 
@@ -346,8 +329,7 @@ In another shell start the Celery process as well::
     cd HHypermap
     celery -A hypermap worker --beat --scheduler django -l info
 
-Test the stack
-==============
+## Test the stack
 
 Now that GeoNode/WorldMap and Hypermap are both running, test the stack by uploading a layer.
 
@@ -371,15 +353,13 @@ In order to have layers in the search engine (Solr) there are two options:
 
 We recommend the second option, which can be configured in the next section.
 
-Schedule Celery tasks
-=====================
+## Schedule Celery tasks
 
 Go to the Periodic Task administrative interface: http://localhost:8001/admin/django_celery_beat/periodictask/
 
 Create the following two tasks:
 
-Index Cached Layer Task
------------------------
+### Index Cached Layer Task
 
 This task will sync the layers from the cache to the search engine. Layers are sent in the cache every time they are saved:
 
@@ -387,8 +367,7 @@ This task will sync the layers from the cache to the search engine. Layers are s
     * Task (registered): hypermap.aggregator.tasks.index_cached_layers
     * Interval: every 1 minute (or as needed)
 
-Check Worldmap Service
-----------------------
+### Check Worldmap Service
 
 This task will do a check of all of WorldMap service:
 
@@ -399,8 +378,7 @@ This task will do a check of all of WorldMap service:
 
 Now upload a new layer in GeoNode/WorldMap and check if it appears in Hypermap and in Solr (you may need to wait for the tasks to be executed)
 
-Update Last GeoNode WorldMap Layers
------------------------------------
+### Update Last GeoNode WorldMap Layers
 
 If your GeoNode/WorldMap instance has many layers, it is preferable to runt the check_service not so often, as it can be time consuming, and rather use the update_last_wm_layers.
 

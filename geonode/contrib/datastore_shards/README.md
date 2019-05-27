@@ -1,8 +1,4 @@
-.. _datastore_shards:
-
-===============================
-Use datastore shards in GeoNode
-===============================
+# Use datastore shards in GeoNode
 
 Many organizations have hundreds of layers uploaded to GeoNode. In such a case
 using the default GeoNode configuration, with just one PostGIS database and one
@@ -24,26 +20,23 @@ GeoServer PostGIS store for all of the layers has several limitations, such as:
 These problems can be tackled using the Datastore Shards GeoNode contrib module,
 which automatically creates new shards when some defined conditions changes.
 
-How to use the `datastore_shards` module
-========================================
+## How to use the `datastore_shards` module
 
 As a first thing, add the module in the INSTALLED_APPS section of the settings
 file:
 
-.. code-block:: python
-
+```Python
     INSTALLED_APPS = (
         ...,
         'geonode.contrib.datastore_shards',
         ...
     )
-
+```
 
 Here is a typical extract of the settings that must be used for GeoNode to use
 the datatabase shards module:
 
-.. code-block:: python
-
+```Python
     # SHARD DATABASES SETTINGS
     # SHARD_STRATEGY may be yearly, monthly, layercount
     SHARD_STRATEGY = 'layercount'
@@ -51,12 +44,11 @@ the datatabase shards module:
     SHARD_PREFIX = 'wm_'
     SHARD_SUFFIX = ''
     DATASTORE_URL = 'postgis://user:password@localhost:5432/data'
-
+```
 
 Override the `geonode.geoserver.helpers` **datastore_db** method as follows:
 
-.. code-block:: python
-
+```Python
     @property
     def datastore_db(self):
         """
@@ -71,7 +63,7 @@ Override the `geonode.geoserver.helpers` **datastore_db** method as follows:
             return datastore_dict
         else:
             return dict()
-
+```
 
 Now syncronize the module models with the database::
 
@@ -84,11 +76,9 @@ is needed.
 
 .. note:: The PostrgreSQL ROLE which is used (user in DATASTORE_URL) must have CREATEDB option assigned in order to be able to create the PostgreSQL shards.
 
-Database shards settings
-========================
+## Database shards settings
 
-SHARD_STRATEGY
---------------
+### SHARD_STRATEGY
 
 This setting can currently be set to 'yearly', 'monthly', 'layercount':
 
@@ -106,8 +96,7 @@ This setting can currently be set to 'yearly', 'monthly', 'layercount':
         PostgreSQL database and GeoServer store name is in the form:
         prefix_01234_suffix. 01234 is a progressive number starting from 0.
 
-SHARD_PREFIX and SHARD_SUFFIX
------------------------------
+### SHARD_PREFIX and SHARD_SUFFIX
 
 When these settings are used, a prefix and a suffix is appended to the name of the
 shard.
@@ -116,8 +105,7 @@ For example, if SHARD_PREFIX = 'foo' and SHARD_SUFFIX = 'bar', when using
 a SHARD_STRATEGY set to 'yearly', the shard for 2017 will be named
 foo_2017_bar.
 
-SHARD_LAYER_COUNT
------------------
+### SHARD_LAYER_COUNT
 
 This setting is used when SHARD_STRATEGY is set to "layercount", and it represents
 the maximum number a shard can contain before next shard is created and used.
