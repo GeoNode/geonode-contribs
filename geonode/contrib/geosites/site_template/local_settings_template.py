@@ -49,7 +49,7 @@ GEOSERVER_WEB_UI_LOCATION = os.getenv(
 )
 
 GEOSERVER_PUBLIC_LOCATION = os.getenv(
-    'GEOSERVER_PUBLIC_LOCATION', urljoin(SITEURL, '/gs/')
+    'GEOSERVER_PUBLIC_LOCATION', urljoin(SITEURL, '/geoserver/')
 )
 
 OGC_SERVER_DEFAULT_USER = os.getenv(

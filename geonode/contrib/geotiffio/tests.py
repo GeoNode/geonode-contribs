@@ -117,7 +117,7 @@ class GeoTIFFIOTest(GeoNodeLiveTestSupport):
         url = geotiffio.create_geotiff_io_url(uploaded, access_token)
         expected = (
             'http://app.geotiff.io?url='
-            'http%3A//localhost%3A8000/gs/wcs%3F'
+            'http%3A//localhost%3A8080/geoserver/wcs%3F'
             'service%3DWCS'
             '%26format%3Dimage%252Ftiff'
             '%26request%3DGetCoverage'
@@ -154,7 +154,7 @@ class GeoTIFFIOTest(GeoNodeLiveTestSupport):
         url = geotiffio.create_geotiff_io_url(uploaded, access_token)
         expected = (
             'http://app.geotiff.io?url='
-            'http%3A//localhost%3A8000/gs/wcs%3F'
+            'http%3A//localhost%3A8080/geoserver/wcs%3F'
             'service%3DWCS'
             '%26format%3Dimage%252Ftiff'
             '%26request%3DGetCoverage'
