@@ -17,17 +17,5 @@ setup(
     long_description=README,
     url='http://geonode.org',
     author='GeoNode Developers',
-    author_email='dev@geonode.org',
-    classifiers=[
-        'Environment :: Web Environment',
-        'Framework :: Django',
-        'Framework :: Django :: 1.11',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: GPL',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-    ],
+    author_email='dev@geonode.org'
 )
