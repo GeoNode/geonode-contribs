@@ -23,6 +23,7 @@ from geonode.layers.models import Layer
 from geonode.maps.models import Map, MapLayer, MapSnapshot
 from geonode.utils import forward_mercator, default_map_config
 from geonode.utils import llbbox_to_mercator
+from geonode.utils import bbox_to_projection
 from geonode.layers.views import _resolve_layer
 from geonode.maps.views import _resolve_map, _PERMISSION_MSG_VIEW, clean_config
 # from geonode.maps.views import snapshot_config
@@ -432,7 +433,8 @@ def add_layers_to_map_config(request, map_obj, layer_names, add_base_layers=True
             # invisible layer, skip inclusion
             continue
 
-        layer_bbox = layer.bbox
+        #layer_bbox = layer.bbox
+        layer_bbox = layer.ll_bbox
         # assert False, str(layer_bbox)
         if bbox is None:
             bbox = list(layer_bbox[0:4])
@@ -451,11 +453,25 @@ def add_layers_to_map_config(request, map_obj, layer_names, add_base_layers=True
         config["title"] = title
         config["queryable"] = True
 
-        config["srs"] = getattr(
+        default_srs = getattr(
             settings, 'DEFAULT_MAP_CRS', 'EPSG:900913')
-
+        config["srs"] = default_srs
         config["bbox"] = bbox if config["srs"] != 'EPSG:900913' \
             else llbbox_to_mercator([float(coord) for coord in bbox])
+
+        def decimal_encode(bbox):
+            import decimal
+            _bbox = []
+            for o in [float(coord) for coord in bbox]:
+                if isinstance(o, decimal.Decimal):
+                    o = (str(o) for o in [o])
+                _bbox.append(o)
+            # Must be in the form : [x0, x1, y0, y1
+            return [_bbox[0], _bbox[2], _bbox[1], _bbox[3]]
+
+        config["bbox"] = decimal_encode(
+            bbox_to_projection([float(coord) for coord in layer_bbox[0:4]] + [layer.srid, ],
+                               target_srid=int(default_srs.split(":")[1]))[:4])
 
         access_token = request.session['access_token'] if request and 'access_token' in request.session else None
         if layer.storeType == "remoteStore":
@@ -716,13 +732,29 @@ def gxp2wm(config, map_obj=None):
                         print 'Skipping this layer as it has not a style... %s' % layer_config
                     if layer.category:
                         group = layer.category.gn_description
-                    layer_config["srs"] = getattr(
-                        settings, 'DEFAULT_MAP_CRS', 'EPSG:900913')
-                    bbox = layer.bbox[:-1]
-                    # WorldMap GXP use a different bbox representation than GeoNode
-                    bbox = [bbox[0], bbox[2], bbox[1], bbox[3]]
-                    layer_config["bbox"] = [float(coord) for coord in bbox] if layer_config["srs"] != 'EPSG:900913' \
-                        else llbbox_to_mercator([float(coord) for coord in bbox])
+
+                    layer_config["srs"] = layer.srid
+                    layer_bbox = layer.bbox[0:4]
+                    bbox = layer_bbox[:]
+                    bbox[0] = float(layer_bbox[0])
+                    bbox[1] = float(layer_bbox[2])
+                    bbox[2] = float(layer_bbox[1])
+                    bbox[3] = float(layer_bbox[3])
+
+                    def decimal_encode(bbox):
+                        import decimal
+                        _bbox = []
+                        for o in [float(coord) for coord in bbox]:
+                            if isinstance(o, decimal.Decimal):
+                                o = (str(o) for o in [o])
+                            _bbox.append(o)
+                        # Must be in the form : [x0, x1, y0, y1
+                        return [_bbox[0], _bbox[2], _bbox[1], _bbox[3]]
+
+                    layer_config["bbox"] = decimal_encode(
+                        bbox_to_projection([float(coord) for coord in layer_bbox] + [layer.srid, ],
+                                           target_srid=int(layer.srid.split(":")[1]))[:4])
+
             if is_hh:
                 layer_config['local'] = False
                 layer_config['styles'] = ''
@@ -733,7 +765,14 @@ def gxp2wm(config, map_obj=None):
                 layer_config['url'] = hh_url
             if is_wm or is_hh:
                 # bbox
-                layer_config['llbbox'] = [float(coord) for coord in bbox]
+                if is_wm:
+                    layer_config['llbbox'] = [float(layer.ll_bbox[0]),
+                                              float(layer.ll_bbox[2]),
+                                              float(layer.ll_bbox[1]),
+                                              float(layer.ll_bbox[3])]
+                else:
+                    layer_config['llbbox'] = [float(coord) for coord in bbox]
+
                 # group
                 if 'group' not in layer_config:
                     layer_config['group'] = group
