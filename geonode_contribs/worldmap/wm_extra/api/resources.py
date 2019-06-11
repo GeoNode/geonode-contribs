@@ -5,7 +5,7 @@ from taggit.models import Tag
 from geonode.maps.models import Layer
 from geonode.base.models import TopicCategory
 
-from geonode.contrib.worldmap.wm_extra.models import Action
+from geonode_contribs.worldmap.wm_extra.models import Action
 
 
 class TopicCategoryResource(ModelResource):

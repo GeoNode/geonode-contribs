@@ -1,1 +1,1 @@
-default_app_config = 'geonode.contrib.worldmap.wm_extra.apps.WMExtraConfig'
+default_app_config = 'geonode_contribs.worldmap.wm_extra.apps.WMExtraConfig'
