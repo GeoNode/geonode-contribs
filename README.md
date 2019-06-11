@@ -8,10 +8,10 @@ pip install geonode_contribs
 
 ### WorldMap
 
-For using WorldMap, first install geoexplorer-worldmap:
+For using WorldMap, first install requirements:
 
 ```
-pip install geoexplorer-worldmap
+pip install -r requirements.txt
 ```
 
 Then add the following applications to your INSTALLED_APPS in settings.py:
