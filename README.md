@@ -8,10 +8,22 @@ pip install geonode_contribs
 
 ### WorldMap
 
-For using WorldMap contrib app add this to your INSTALLED_APPS in settings.py:
+For using WorldMap, first install geoexplorer-worldmap:
 
 ```
-INSTALLED_APPS += ('geonode_contribs.worldmap')
+pip install geoexplorer-worldmap
+```
+
+Then add the following applications to your INSTALLED_APPS in settings.py:
+
+```
+INSTALLED_APPS += (PROJECT_NAME,
+                   'geoexplorer-worldmap',
+                   'geonode_contribs.worldmap',
+                   'geonode_contribs.worldmap.gazetteer',
+                   'geonode_contribs.worldmap.wm_extra',
+                   'geonode_contribs.worldmap.mapnotes',
+                   )
 ```
 
 Add the following settings in your settings file:
