@@ -1,0 +1,3 @@
+include README.md LICENSE
+recursive-include templates *.html
+recursive-include geonode_worldmap/templates *.html

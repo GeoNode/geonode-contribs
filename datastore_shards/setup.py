@@ -8,15 +8,17 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='geonode_contribs',
-    version='2.10.1',
+    name='geonode_datastore_shards',
+    version='0.1',
     packages=find_packages(),
     include_package_data=True,
     license='GPL',
-    description='GeoNode contrib applications',
+    description='GeoNode Datastore Shard Application',
     #long_description=README,
     #long_description_content_type='text/markdown',
     url='http://geonode.org',
     author='GeoNode Developers',
-    author_email='dev@geonode.org'
+    author_email='dev@geonode.org',
+    install_requires=[
+    ],
 )

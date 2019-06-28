@@ -2,8 +2,8 @@ from django.apps import AppConfig
 
 
 class WMExtraConfig(AppConfig):
-    name = 'geonode_contribs.worldmap.wm_extra'
+    name = 'geonode_worldmap.wm_extra'
     verbose_name = 'WM Extras'
 
     def ready(self):
-        from geonode_contribs.worldmap.wm_extra import signals  # noqa
+        from geonode_worldmap.wm_extra import signals  # noqa
