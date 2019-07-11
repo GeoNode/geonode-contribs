@@ -31,3 +31,9 @@ LDAP_GROUP_NAME_ATTRIBUTE = getattr(
     "GEONODE_LDAP_GROUP_NAME_ATTRIBUTE",
     "cn"
 )
+
+LDAP_GROUP_PROFILE_MEMBER_ATTR = getattr(
+    settings,
+    "GEONODE_LDAP_GROUP_PROFILE_MEMBER_ATTR",
+    "member"
+)
