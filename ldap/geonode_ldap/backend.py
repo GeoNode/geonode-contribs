@@ -115,10 +115,8 @@ class GeonodeLdapBackend(backend.LDAPBackend):
 
             user = ldap_user._user
         except ldap_user.AuthenticationFailed as e:
-            logger.debug(
-                "Authentication failed for {}: {}".format(
-                    ldap_user._username, e)
-            )
+            msg = "LDAP Authentication failed for {}: {}".format(ldap_user._username, e)
+            logger.warning(msg)
         except ldap.LDAPError as e:
             results = backend.ldap_error.send(
                 ldap_user.backend.__class__,
@@ -178,6 +176,7 @@ class GeonodeLdapBackend(backend.LDAPBackend):
 
         if save_user:
             ldap_user._user.save()
+            ldap_user._user.keywords.add("ldap")
 
         # This has to wait until we're sure the user has a pk.
         if self.settings.MIRROR_GROUPS or self.settings.MIRROR_GROUPS_EXCEPT:
@@ -191,7 +190,6 @@ class GeonodeLdapBackend(backend.LDAPBackend):
         user's membership.
 
         """
-
         user = ldap_user._user
         slug_map = utils.get_ldap_groups_map(user)
         profile_slugs_set = frozenset(slug_map.keys())
