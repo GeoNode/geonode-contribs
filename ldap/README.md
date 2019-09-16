@@ -15,7 +15,6 @@ backend, based on django_auth_ldap.
 
 ## Installation
 
-
 Installing this contrib package is a matter of:
 
 1. [Installing geonode](http://geonode.org/#install)
