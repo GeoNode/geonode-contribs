@@ -24,6 +24,26 @@ In the ``settings.py``(or local-settings) file, enable the ``geonode_risks`` app
     )
 ```
 
+## URLs
+
+Configure the urls whithin your Django app.
+
+```from django.conf.urls import url
+from django.views.generic import TemplateView
+
+from geonode.urls import *
+
+urlpatterns += [
+    url(r'^geonode_risks/', include('geonode_risks.urls', namespace='risks')),
+]
+
+urlpatterns = [
+   url(r'^/?$',
+       TemplateView.as_view(template_name='site_index.html'),
+       name='home'),
+] + urlpatterns
+```
+
 ## Migrate
 
 This step is needed in order to update the DB model.
@@ -43,3 +63,56 @@ exported metadata file, and one ``.css`` file that is referenced within the xsl 
 ```
 
 This means that any customization to the output format should be performed on these files.
+
+## Add GeoNode Top-bar Menu Links to the Risks Applications
+
+Edit the the `site_base.html` by adding the menu options:
+
+```HTML
+ <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav toolbar">
+        {% block tabs %}
+          ...
+          <li id="nav_risks">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{% trans 'Risk Management Tools' %}<i class="fa fa-angle-down fa-lg"></i></a>
+              <ul class="dropdown-menu">
+                  <li><a href="{% url 'risks:cost_benefit_analysis:index' %}">{% trans "Cost/Benefit Analysis & Decision Tool" %}</a></li>
+                  <li><a href="{% url 'risks:data_extraction:index' %}">{% trans "Risk Data Extraction & Visualization" %}</a></li>
+              </ul>
+          </li>
+          ...
+          {% endblock %}
+        </ul>
+ </div>
+```
+
+## Configure the `Risks Apps`
+
+From the `admin dashboard` configure the two applications, by adding them if not already present.
+
+```Python
+  Home › Geonode_Risks › Risk apps
+
+  * Cost Benefit Analysis
+  * Data Extraction
+```
+
+Make sure the administrative levels have been correctly populated from `Home › Geonode_Risks › Regions`.
+
+You can initialize them by running the management command:
+
+```Python
+    python manage.py populateau
+```
+
+## Import and convert Risk Analysis Datasets
+
+This can be done both through the `management commands` or, more easily, through the `admin dashboards`
+
+The section `Home › Geonode_Risks` will allow you to run:
+
+* `Risks Analysis: Create new through a .ini descriptor file`
+* `Risks Analysis: Import Risk Data from XLSX file`
+* `Risks Analysis: Import or Update Risk Metadata from XLSX file`
+
+The file format must be correct. You can find some examples inside the `geonode_risks/tests` folder.
