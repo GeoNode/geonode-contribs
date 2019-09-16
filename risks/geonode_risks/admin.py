@@ -180,7 +180,7 @@ class RiskAnalysisCreateAdmin(admin.ModelAdmin):
 
     def __init__(self, *args, **kwargs):
         super(RiskAnalysisCreateAdmin, self).__init__(*args, **kwargs)
-        self.list_display_links = (None, )
+        self.list_display_links = ()
 
 
 class RiskAnalysisImportDataAdmin(admin.ModelAdmin):
@@ -197,7 +197,7 @@ class RiskAnalysisImportDataAdmin(admin.ModelAdmin):
 
     def __init__(self, *args, **kwargs):
         super(RiskAnalysisImportDataAdmin, self).__init__(*args, **kwargs)
-        self.list_display_links = (None, )
+        self.list_display_links = ()
 
 
 class RiskAnalysisImportMetaDataAdmin(admin.ModelAdmin):
@@ -214,7 +214,7 @@ class RiskAnalysisImportMetaDataAdmin(admin.ModelAdmin):
 
     def __init__(self, *args, **kwargs):
         super(RiskAnalysisImportMetaDataAdmin, self).__init__(*args, **kwargs)
-        self.list_display_links = (None, )
+        self.list_display_links = ()
 
 
 @admin.register(RiskApp)
