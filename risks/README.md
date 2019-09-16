@@ -1,5 +1,10 @@
 # geonode-risk_management_tools
+
 The ``geonode-risk_management_tools`` contrib app is a GeoNode Extension built by WorldBanck GFDRR which adds the capability of extracting and managing Hazard Risks on geographical areas.
+
+## Reference Implementation
+
+ - [disasterrisk-af-dev.geo-solutions.it](https://disasterrisk-af-dev.geo-solutions.it)
 
 ## Overview
 The World Bank and GFDRR are leading an ongoing Technical Assistance (TA) to the Government of Afghanistan on Disaster Risk Management. As part of this TA, a multi-hazard risk assessment was conducted. An international consortium was hired to produce new information on hazard, exposure, vulnerability and risk, for flooding, earthquake, landslide, avalanche, and drought. Hazard and loss for different return periods was computed for all districts and regions. In addition, a cost-benefit analysis was conducted for a select number of risk reduction options for floods and earthquakes (e.g. flood levees; earthquake-proofing of buildings).
