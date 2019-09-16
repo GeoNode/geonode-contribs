@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '26_initial'),
+        ('geonode_risks', '26_initial'),
     ]
 
     operations = [

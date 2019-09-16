@@ -7,18 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '0034_auto_20170330_0631'),
+        ('geonode_risks', '0034_auto_20170330_0631'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='analysistypefurtherresourceassociation',
             name='resource',
-            field=models.ForeignKey(to='risks.FurtherResource'),
+            field=models.ForeignKey(to='geonode_risks.FurtherResource'),
         ),
         migrations.AlterField(
             model_name='dymensioninfofurtherresourceassociation',
             name='resource',
-            field=models.ForeignKey(to='risks.FurtherResource'),
+            field=models.ForeignKey(to='geonode_risks.FurtherResource'),
         ),
     ]

@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('layers', '24_to_26'),
-        ('risks', '0044_auto_20170411_0440'),
+        ('geonode_risks', '0044_auto_20170411_0440'),
     ]
 
     operations = [

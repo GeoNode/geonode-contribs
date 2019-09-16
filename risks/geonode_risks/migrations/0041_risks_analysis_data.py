@@ -6,8 +6,8 @@ from django.db import migrations, models
 def migrate_layers(apps, schema_editor):
     if schema_editor.connection.alias != 'default':
         return
-    #RA = apps.get_model('risks', 'RiskAnalysis')
-    DIRA = apps.get_model('risks', 'RiskAnalysisDymensionInfoAssociation')
+    #RA = apps.get_model('geonode_risks', 'RiskAnalysis')
+    DIRA = apps.get_model('geonode_risks', 'RiskAnalysisDymensionInfoAssociation')
     for d in DIRA.objects.all():
 
         d.riskanalysis.layer = d.layer
@@ -17,8 +17,8 @@ def migrate_layers(apps, schema_editor):
 def unmigrate_layers(apps, schema_editor):
     if schema_editor.connection.alias != 'default':
         return
-    RA = apps.get_model('risks', 'RiskAnalysis')
-    #DIRA = apps.get_model('risks', 'RiskAnalysisDymensionInfoAssociation')
+    RA = apps.get_model('geonode_risks', 'RiskAnalysis')
+    #DIRA = apps.get_model('geonode_risks', 'RiskAnalysisDymensionInfoAssociation')
     for d in RA.objects.all():
         d.dymensioninfo_associacion.layer = d.layer
         d.dymensioninfo_associacion.style = d.style
@@ -28,7 +28,7 @@ def unmigrate_layers(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '0040_risk_analysis_layer'),
+        ('geonode_risks', '0040_risk_analysis_layer'),
     ]
 
     operations = [

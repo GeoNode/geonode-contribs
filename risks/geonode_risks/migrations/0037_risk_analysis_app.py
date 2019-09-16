@@ -6,20 +6,20 @@ from django.db import migrations, models
 
 
 def get_default_app():
-    from geonode.contrib.risks.models import RiskApp
+    from ..models import RiskApp
     return RiskApp.objects.get(name=RiskApp.APP_DATA_EXTRACTION).id
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '0036_costbenefit_app'),
+        ('geonode_risks', '0036_costbenefit_app'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='riskanalysis',
             name='app',
-            field=models.ForeignKey(default=get_default_app, to='risks.RiskApp'),
+            field=models.ForeignKey(default=get_default_app, to='geonode_risks.RiskApp'),
             preserve_default=False,
         ),
     ]

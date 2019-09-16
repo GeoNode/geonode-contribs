@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '0032_merge'),
+        ('geonode_risks', '0032_merge'),
     ]
 
     operations = [
@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dymensioninfofurtherresourceassociation',
             name='dimension_info',
-            field=models.ForeignKey(related_name='further_resource', default='', to='risks.DymensionInfo'),
+            field=models.ForeignKey(related_name='further_resource', default='', to='geonode_risks.DymensionInfo'),
             preserve_default=False,
         ),
     ]

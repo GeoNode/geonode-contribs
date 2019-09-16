@@ -40,6 +40,108 @@ class GeoserverDataSource(object):
         self.wfs = GeoserverDataSource.WFCLASS(url=url, version='2.0.0', **kwargs)
         self.output_format = output_format
 
+    def getGETGetFeatureRequest(
+        self,
+        typename=None,
+        filter=None,
+        bbox=None,
+        featureid=None,
+        featureversion=None,
+        propertyname=None,
+        maxfeatures=None,
+        storedQueryID=None,
+        storedQueryParams=None,
+        outputFormat=None,
+        method="Get",
+        startindex=None,
+        sortby=None,
+    ):
+        """Formulate proper GetFeature request using KVP encoding
+        ----------
+        typename : list
+            List of typenames (string)
+        filter : string
+            XML-encoded OGC filter expression.
+        bbox : tuple
+            (left, bottom, right, top) in the feature type's coordinates == (minx, miny, maxx, maxy)
+        featureid : list
+            List of unique feature ids (string)
+        featureversion : string
+            Default is most recent feature version.
+        propertyname : list
+            List of feature property names. '*' matches all.
+        maxfeatures : int
+            Maximum number of features to be returned.
+        method : string
+            Qualified name of the HTTP DCP method to use.
+        outputFormat: string (optional)
+            Requested response format of the request.
+        startindex: int (optional)
+            Start position to return feature set (paging in combination with maxfeatures)
+        sortby: list (optional)
+            List of property names whose values should be used to order
+            (upon presentation) the set of feature instances that
+            satify the query.
+        There are 3 different modes of use
+        1) typename and bbox (simple spatial query)
+        2) typename and filter (==query) (more expressive)
+        3) featureid (direct access to known features)
+        """
+        storedQueryParams = storedQueryParams or {}
+
+        base_url = next(
+            (
+                m.get("url")
+                for m in self.wfs.getOperationByName("GetFeature").methods
+                if m.get("type").lower() == method.lower()
+            )
+        )
+        base_url = base_url if base_url.endswith("?") else base_url + "?"
+
+        request = {"service": "WFS", "version": self.wfs.version, "request": "GetFeature"}
+
+        # check featureid
+        if featureid:
+            request["featureid"] = ",".join(featureid)
+        elif bbox:
+            request["bbox"] = self.wfs.getBBOXKVP(bbox, typename)
+        elif filter:
+            request["query"] = str(filter)
+        if typename:
+            typename = (
+                [typename] if type(typename) == type("") else typename
+            )  # noqa: E721
+            if int(self.wfs.version.split(".")[0]) >= 2:
+                request["typenames"] = ",".join(typename)
+            else:
+                request["typename"] = ",".join(typename)
+        if propertyname:
+            request["propertyname"] = ",".join(propertyname)
+        if sortby:
+            request["sortby"] = ",".join(sortby)
+        if featureversion:
+            request["featureversion"] = str(featureversion)
+        if maxfeatures:
+            if int(self.wfs.version.split(".")[0]) >= 2:
+                request["count"] = str(maxfeatures)
+            else:
+                request["maxfeatures"] = str(maxfeatures)
+        if startindex:
+            request["startindex"] = str(startindex)
+        if storedQueryID:
+            # request["storedQuery_id"] = str(storedQueryID)
+            for param in storedQueryParams:
+                request[param] = storedQueryParams[param]
+        if outputFormat is not None:
+            request["outputFormat"] = outputFormat
+
+        data = urllib.urlencode(request, doseq=True)
+
+        return base_url + data
+
+    def _patch_wfs(self):
+        self.wfs.getGETGetFeatureRequest = self.getGETGetFeatureRequest
+
     def prepare_vparams(self, vparams, separator=":"):
         u = urllib.quote
         return [separator.join((u(k), u(str(v)),)) for k, v in vparams.iteritems()]
@@ -79,9 +181,9 @@ class GeoserverDataSource(object):
                        'dim1_value', 'dim2_value', 'dim3_value', 'dim4_value', 'dim5_value',
                        'dim1_order', 'dim2_order', 'dim3_order', 'dim4_order', 'dim5_order',
                        'value']
-        log.info("querying %s:%s with cql params: %s", layer_name, dim_name, cql_filter)
-        # r = self.wfs.getfeature('{}_data'.format(layer_name), propertyname=field_names, outputFormat=self.output_format, storedQueryParams=cql_filter, storedQueryID=1)
-        r = self.wfs.getfeature('{}_data'.format(layer_name), propertyname=field_names, outputFormat=self.output_format, storedQueryParams=cql_filter, storedQueryID='risk_data_cql')
+        log.info("querying %s:%s with cql params: %s" % (layer_name, dim_name, cql_filter))
+        self._patch_wfs()
+        r = self.wfs.getfeature('{}_data'.format(layer_name), propertyname=field_names, outputFormat=self.output_format, storedQueryParams=cql_filter, storedQueryID='riskDataStoredQuery')
 
         return self.deserialize(r)
 

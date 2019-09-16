@@ -6,13 +6,13 @@ from django.db import migrations, models
 
 
 def get_default_app():
-    from geonode.contrib.risks.models import RiskApp
+    from ..models import RiskApp
     return RiskApp.objects.all().first().id
     
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '0043_auto_20170410_1150'),
+        ('geonode_risks', '0043_auto_20170410_1150'),
     ]
 
     operations = [
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='riskanalysisimportmetadata',
             name='riskapp',
-            field=models.ForeignKey(default=get_default_app, to='risks.RiskApp'),
+            field=models.ForeignKey(default=get_default_app, to='geonode_risks.RiskApp'),
             preserve_default=False,
         ),
     ]

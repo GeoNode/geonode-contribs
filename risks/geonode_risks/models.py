@@ -307,23 +307,6 @@ class HazardType(RiskAppAware, LocationAware, Exportable, models.Model):
         return self.get_url('hazard_type', loc.code, self.mnemonic)
 
     def get_hazard_details(self):
-        """
-    "hazardType": {
-        "mnemonic": "EQ",
-        "description": "Lorem ipsum dolor, .....",
-        "analysisTypes"[{
-            "name": "loss_impact",
-            "title": "Loss Impact",
-            "href": "http://disasterrisk-af.geo-solutions.it/risks/risk_data_extraction/loc/AF15/ht/EQ/at/loss_impact/"
-        }, {
-            "name": "impact",
-            "title": "Impact Analysis",
-            "href": "http://disasterrisk-af.geo-solutions.it/risks/risk_data_extraction/loc/AF15/ht/EQ/at/impact/"
-        }]
-    },
-
-
-        """
         analysis_types = self.get_analysis_types()
         loc = self.get_location()
         out = {'mnemonic': self.mnemonic,
@@ -1433,12 +1416,12 @@ class AdditionalData(Exportable, models.Model):
         return out
 
 def create_risks_apps(apps, schema_editor):
-    RA = apps.get_model('risks', 'RiskApp')
+    RA = apps.get_model('geonode_risks', 'RiskApp')
     for rname, rlabel in RiskApp.APPS:
         RA.objects.get_or_create(name=rname)
 
 def uncreate_risks_apps(apps, schema_editor):
-    RA = apps.get_model('risks', 'RiskApp')
+    RA = apps.get_model('geonode_risks', 'RiskApp')
     RA.objects.all().delete()
 
 def get_risk_app_default():

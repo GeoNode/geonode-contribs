@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '0027_increased_filefield_name_limit'),
+        ('geonode_risks', '0027_increased_filefield_name_limit'),
     ]
 
     operations = [
@@ -22,11 +22,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='riskanalysisdymensioninfoassociation',
             name='dymensioninfo',
-            field=models.ForeignKey(related_name='riskanalysis_associacion', to='risks.DymensionInfo'),
+            field=models.ForeignKey(related_name='riskanalysis_associacion', to='geonode_risks.DymensionInfo'),
         ),
         migrations.AlterField(
             model_name='riskanalysisdymensioninfoassociation',
             name='riskanalysis',
-            field=models.ForeignKey(related_name='dymensioninfo_associacion', to='risks.RiskAnalysis'),
+            field=models.ForeignKey(related_name='dymensioninfo_associacion', to='geonode_risks.RiskAnalysis'),
         ),
     ]

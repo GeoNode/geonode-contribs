@@ -4,12 +4,12 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 import jsonfield.fields
 
-from geonode.contrib.risks import models as risks_models
+from .. import models as risks_models
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '0035_auto_20170330_0637'),
+        ('geonode_risks', '0035_auto_20170330_0637'),
     ]
 
     operations = [
@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('name', models.CharField(default=b'', max_length=255)),
                 ('data', jsonfield.fields.JSONField(default={})),
-                ('risk_analysis', models.ForeignKey(to='risks.RiskAnalysis')),
+                ('risk_analysis', models.ForeignKey(to='geonode_risks.RiskAnalysis')),
             ],
         ),
         migrations.CreateModel(
@@ -33,13 +33,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='analysistype',
             name='app',
-            field=models.ForeignKey(default=risks_models.get_risk_app_default, to='risks.RiskApp'),
+            field=models.ForeignKey(default=risks_models.get_risk_app_default, to='geonode_risks.RiskApp'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='hazardtype',
             name='app',
-            field=models.ForeignKey(default=risks_models.get_risk_app_default, to='risks.RiskApp'),
+            field=models.ForeignKey(default=risks_models.get_risk_app_default, to='geonode_risks.RiskApp'),
             preserve_default=False,
         ),
     ]

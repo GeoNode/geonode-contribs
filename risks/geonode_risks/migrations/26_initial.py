@@ -26,11 +26,11 @@ class Migration(migrations.Migration):
                 ('rght', models.PositiveIntegerField(editable=False, db_index=True)),
                 ('tree_id', models.PositiveIntegerField(editable=False, db_index=True)),
                 ('level', models.PositiveIntegerField(editable=False, db_index=True)),
-                ('parent', mptt.fields.TreeForeignKey(related_name='children', blank=True, to='risks.AdministrativeDivision', null=True)),
+                ('parent', mptt.fields.TreeForeignKey(related_name='children', blank=True, to='geonode_risks.AdministrativeDivision', null=True)),
             ],
             options={
                 'ordering': ['code', 'name'],
-                'db_table': 'risks_administrativedivision',
+                'db_table': 'geonode_risks_administrativedivision',
                 'verbose_name_plural': 'Administrative Divisions',
             },
         ),
@@ -44,17 +44,17 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['name'],
-                'db_table': 'risks_analysistype',
+                'db_table': 'geonode_risks_analysistype',
             },
         ),
         migrations.CreateModel(
             name='AnalysisTypeFurtherResourceAssociation',
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True)),
-                ('analysis_type', models.ForeignKey(blank=True, to='risks.AnalysisType', null=True)),
+                ('analysis_type', models.ForeignKey(blank=True, to='geonode_risks.AnalysisType', null=True)),
             ],
             options={
-                'db_table': 'risks_analysisfurtheresourceassociation',
+                'db_table': 'geonode_risks_analysisfurtheresourceassociation',
             },
         ),
         migrations.CreateModel(
@@ -67,17 +67,17 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['name'],
-                'db_table': 'risks_dymensioninfo',
+                'db_table': 'geonode_risks_dymensioninfo',
             },
         ),
         migrations.CreateModel(
             name='DymensionInfoFurtherResourceAssociation',
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True)),
-                ('dymension_info', models.ForeignKey(blank=True, to='risks.DymensionInfo', null=True)),
+                ('dymension_info', models.ForeignKey(blank=True, to='geonode_risks.DymensionInfo', null=True)),
             ],
             options={
-                'db_table': 'risks_dymensionfurtheresourceassociation',
+                'db_table': 'geonode_risks_dymensionfurtheresourceassociation',
             },
         ),
         migrations.CreateModel(
@@ -88,7 +88,7 @@ class Migration(migrations.Migration):
                 ('resource', models.ForeignKey(related_name='resource', to='base.ResourceBase')),
             ],
             options={
-                'db_table': 'risks_further_resource',
+                'db_table': 'geonode_risks_further_resource',
             },
         ),
         migrations.CreateModel(
@@ -117,17 +117,17 @@ class Migration(migrations.Migration):
                 ('data_quality_statement', models.TextField()),
             ],
             options={
-                'db_table': 'risks_hazardset',
+                'db_table': 'geonode_risks_hazardset',
             },
         ),
         migrations.CreateModel(
             name='HazardSetFurtherResourceAssociation',
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True)),
-                ('hazardset', models.ForeignKey(blank=True, to='risks.HazardSet', null=True)),
+                ('hazardset', models.ForeignKey(blank=True, to='geonode_risks.HazardSet', null=True)),
             ],
             options={
-                'db_table': 'risks_hazardsetfurtheresourceassociation',
+                'db_table': 'geonode_risks_hazardsetfurtheresourceassociation',
             },
         ),
         migrations.CreateModel(
@@ -143,7 +143,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['order', 'mnemonic'],
-                'db_table': 'risks_hazardtype',
+                'db_table': 'geonode_risks_hazardtype',
                 'verbose_name_plural': 'Hazards',
             },
         ),
@@ -162,10 +162,10 @@ class Migration(migrations.Migration):
                 ('e_mail', models.CharField(max_length=255)),
                 ('role', models.CharField(max_length=255)),
                 ('update_frequency', models.TextField()),
-                ('administrative_area', models.ForeignKey(blank=True, to='risks.AdministrativeDivision', null=True)),
+                ('administrative_area', models.ForeignKey(blank=True, to='geonode_risks.AdministrativeDivision', null=True)),
             ],
             options={
-                'db_table': 'risks_pointofcontact',
+                'db_table': 'geonode_risks_pointofcontact',
             },
         ),
         migrations.CreateModel(
@@ -174,11 +174,11 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, primary_key=True)),
                 ('name', models.CharField(max_length=30, db_index=True)),
                 ('level', models.IntegerField(db_index=True)),
-                ('administrative_divisions', models.ManyToManyField(related_name='administrative_divisions', to='risks.AdministrativeDivision')),
+                ('administrative_divisions', models.ManyToManyField(related_name='administrative_divisions', to='geonode_risks.AdministrativeDivision')),
             ],
             options={
                 'ordering': ['name', 'level'],
-                'db_table': 'risks_region',
+                'db_table': 'geonode_risks_region',
                 'verbose_name_plural': 'Regions',
             },
         ),
@@ -193,7 +193,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['name'],
-                'db_table': 'risks_riskanalysis',
+                'db_table': 'geonode_risks_riskanalysis',
                 'verbose_name_plural': 'Risks Analysis',
             },
         ),
@@ -201,11 +201,11 @@ class Migration(migrations.Migration):
             name='RiskAnalysisAdministrativeDivisionAssociation',
             fields=[
                 ('id', models.AutoField(serialize=False, primary_key=True)),
-                ('administrativedivision', models.ForeignKey(to='risks.AdministrativeDivision')),
-                ('riskanalysis', models.ForeignKey(to='risks.RiskAnalysis')),
+                ('administrativedivision', models.ForeignKey(to='geonode_risks.AdministrativeDivision')),
+                ('riskanalysis', models.ForeignKey(to='geonode_risks.RiskAnalysis')),
             ],
             options={
-                'db_table': 'risks_riskanalysisadministrativedivisionassociation',
+                'db_table': 'geonode_risks_riskanalysisadministrativedivisionassociation',
             },
         ),
         migrations.CreateModel(
@@ -216,7 +216,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['descriptor_file'],
-                'db_table': 'risks_descriptor_files',
+                'db_table': 'geonode_risks_descriptor_files',
                 'verbose_name': 'Risks Analysis: Create new through a .ini descriptor file',
                 'verbose_name_plural': 'Risks Analysis: Create new through a .ini descriptor file',
             },
@@ -229,13 +229,13 @@ class Migration(migrations.Migration):
                 ('value', models.CharField(max_length=80, db_index=True)),
                 ('axis', models.CharField(max_length=10, db_index=True)),
                 ('layer_attribute', models.CharField(max_length=80)),
-                ('dymensioninfo', models.ForeignKey(to='risks.DymensionInfo')),
+                ('dymensioninfo', models.ForeignKey(to='geonode_risks.DymensionInfo')),
                 ('layer', models.ForeignKey(related_name='base_layer', to='layers.Layer')),
-                ('riskanalysis', models.ForeignKey(to='risks.RiskAnalysis')),
+                ('riskanalysis', models.ForeignKey(to='geonode_risks.RiskAnalysis')),
             ],
             options={
                 'ordering': ['order', 'value'],
-                'db_table': 'risks_riskanalysisdymensioninfoassociation',
+                'db_table': 'geonode_risks_riskanalysisdymensioninfoassociation',
             },
         ),
         migrations.CreateModel(
@@ -243,12 +243,12 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('data_file', models.FileField(upload_to=b'data_files')),
-                ('region', models.ForeignKey(to='risks.Region')),
-                ('riskanalysis', models.ForeignKey(to='risks.RiskAnalysis')),
+                ('region', models.ForeignKey(to='geonode_risks.Region')),
+                ('riskanalysis', models.ForeignKey(to='geonode_risks.RiskAnalysis')),
             ],
             options={
                 'ordering': ['region', 'riskanalysis'],
-                'db_table': 'risks_data_files',
+                'db_table': 'geonode_risks_data_files',
                 'verbose_name': 'Risks Analysis: Import Risk Data from XLSX file',
                 'verbose_name_plural': 'Risks Analysis: Import Risk Data from XLSX file',
             },
@@ -258,12 +258,12 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('metadata_file', models.FileField(upload_to=b'metadata_files')),
-                ('region', models.ForeignKey(to='risks.Region')),
-                ('riskanalysis', models.ForeignKey(to='risks.RiskAnalysis')),
+                ('region', models.ForeignKey(to='geonode_risks.Region')),
+                ('riskanalysis', models.ForeignKey(to='geonode_risks.RiskAnalysis')),
             ],
             options={
                 'ordering': ['region', 'riskanalysis'],
-                'db_table': 'risks_metadata_files',
+                'db_table': 'geonode_risks_metadata_files',
                 'verbose_name': 'Risks Analysis: Import or Update Risk Metadata from XLSX file',
                 'verbose_name_plural': 'Risks Analysis: Import or Update Risk Metadata from XLSX file',
             },
@@ -271,62 +271,62 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='riskanalysis',
             name='administrative_divisions',
-            field=models.ManyToManyField(to='risks.AdministrativeDivision', through='risks.RiskAnalysisAdministrativeDivisionAssociation'),
+            field=models.ManyToManyField(to='geonode_risks.AdministrativeDivision', through='geonode_risks.RiskAnalysisAdministrativeDivisionAssociation'),
         ),
         migrations.AddField(
             model_name='riskanalysis',
             name='analysis_type',
-            field=models.ForeignKey(related_name='riskanalysis_analysistype', to='risks.AnalysisType'),
+            field=models.ForeignKey(related_name='riskanalysis_analysistype', to='geonode_risks.AnalysisType'),
         ),
         migrations.AddField(
             model_name='riskanalysis',
             name='dymension_infos',
-            field=models.ManyToManyField(to='risks.DymensionInfo', through='risks.RiskAnalysisDymensionInfoAssociation'),
+            field=models.ManyToManyField(to='geonode_risks.DymensionInfo', through='geonode_risks.RiskAnalysisDymensionInfoAssociation'),
         ),
         migrations.AddField(
             model_name='riskanalysis',
             name='hazard_type',
-            field=models.ForeignKey(related_name='riskanalysis_hazardtype', to='risks.HazardType'),
+            field=models.ForeignKey(related_name='riskanalysis_hazardtype', to='geonode_risks.HazardType'),
         ),
         migrations.AddField(
             model_name='riskanalysis',
             name='hazardset',
-            field=models.ForeignKey(related_name='hazardset', blank=True, to='risks.HazardSet', null=True),
+            field=models.ForeignKey(related_name='hazardset', blank=True, to='geonode_risks.HazardSet', null=True),
         ),
         migrations.AddField(
             model_name='pointofcontact',
             name='country',
-            field=models.ForeignKey(blank=True, to='risks.Region', null=True),
+            field=models.ForeignKey(blank=True, to='geonode_risks.Region', null=True),
         ),
         migrations.AddField(
             model_name='hazardsetfurtherresourceassociation',
             name='region',
-            field=models.ForeignKey(blank=True, to='risks.Region', null=True),
+            field=models.ForeignKey(blank=True, to='geonode_risks.Region', null=True),
         ),
         migrations.AddField(
             model_name='hazardsetfurtherresourceassociation',
             name='resource',
-            field=models.ForeignKey(related_name='additional_resource', to='risks.FurtherResource'),
+            field=models.ForeignKey(related_name='additional_resource', to='geonode_risks.FurtherResource'),
         ),
         migrations.AddField(
             model_name='hazardset',
             name='author',
-            field=models.ForeignKey(related_name='metadata_author', to='risks.PointOfContact'),
+            field=models.ForeignKey(related_name='metadata_author', to='geonode_risks.PointOfContact'),
         ),
         migrations.AddField(
             model_name='hazardset',
             name='country',
-            field=models.ForeignKey(to='risks.Region'),
+            field=models.ForeignKey(to='geonode_risks.Region'),
         ),
         migrations.AddField(
             model_name='hazardset',
             name='poc',
-            field=models.ForeignKey(related_name='point_of_contact', to='risks.PointOfContact'),
+            field=models.ForeignKey(related_name='point_of_contact', to='geonode_risks.PointOfContact'),
         ),
         migrations.AddField(
             model_name='hazardset',
             name='riskanalysis',
-            field=models.ForeignKey(related_name='riskanalysis', to='risks.RiskAnalysis'),
+            field=models.ForeignKey(related_name='riskanalysis', to='geonode_risks.RiskAnalysis'),
         ),
         migrations.AddField(
             model_name='hazardset',
@@ -336,46 +336,46 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dymensioninfofurtherresourceassociation',
             name='region',
-            field=models.ForeignKey(blank=True, to='risks.Region', null=True),
+            field=models.ForeignKey(blank=True, to='geonode_risks.Region', null=True),
         ),
         migrations.AddField(
             model_name='dymensioninfofurtherresourceassociation',
             name='resource',
-            field=models.ForeignKey(related_name='linked_resource', to='risks.FurtherResource'),
+            field=models.ForeignKey(related_name='linked_resource', to='geonode_risks.FurtherResource'),
         ),
         migrations.AddField(
             model_name='dymensioninfofurtherresourceassociation',
             name='riskanalysis',
-            field=models.ForeignKey(blank=True, to='risks.RiskAnalysis', null=True),
+            field=models.ForeignKey(blank=True, to='geonode_risks.RiskAnalysis', null=True),
         ),
         migrations.AddField(
             model_name='dymensioninfo',
-            name='risks_analysis',
-            field=models.ManyToManyField(to='risks.RiskAnalysis', through='risks.RiskAnalysisDymensionInfoAssociation'),
+            name='geonode_risks_analysis',
+            field=models.ManyToManyField(to='geonode_risks.RiskAnalysis', through='geonode_risks.RiskAnalysisDymensionInfoAssociation'),
         ),
         migrations.AddField(
             model_name='analysistypefurtherresourceassociation',
             name='hazard_type',
-            field=models.ForeignKey(blank=True, to='risks.HazardType', null=True),
+            field=models.ForeignKey(blank=True, to='geonode_risks.HazardType', null=True),
         ),
         migrations.AddField(
             model_name='analysistypefurtherresourceassociation',
             name='region',
-            field=models.ForeignKey(blank=True, to='risks.Region', null=True),
+            field=models.ForeignKey(blank=True, to='geonode_risks.Region', null=True),
         ),
         migrations.AddField(
             model_name='analysistypefurtherresourceassociation',
             name='resource',
-            field=models.ForeignKey(related_name='further_resource', to='risks.FurtherResource'),
+            field=models.ForeignKey(related_name='further_resource', to='geonode_risks.FurtherResource'),
         ),
         migrations.AddField(
             model_name='administrativedivision',
             name='region',
-            field=models.ForeignKey(to='risks.Region'),
+            field=models.ForeignKey(to='geonode_risks.Region'),
         ),
         migrations.AddField(
             model_name='administrativedivision',
-            name='risks_analysis',
-            field=models.ManyToManyField(to='risks.RiskAnalysis', through='risks.RiskAnalysisAdministrativeDivisionAssociation'),
+            name='geonode_risks_analysis',
+            field=models.ManyToManyField(to='geonode_risks.RiskAnalysis', through='geonode_risks.RiskAnalysisAdministrativeDivisionAssociation'),
         ),
     ]

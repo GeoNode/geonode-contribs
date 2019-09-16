@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('risks', '0042_risks_analysis_finalize'),
+        ('geonode_risks', '0042_risks_analysis_finalize'),
     ]
 
     operations = [
@@ -18,12 +18,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='riskanalysisimportdata',
             name='riskapp',
-            field=models.ForeignKey(default=1, to='risks.RiskApp'),
+            field=models.ForeignKey(default=1, to='geonode_risks.RiskApp'),
             preserve_default=False,
         ),
         migrations.AlterField(
             model_name='additionaldata',
             name='risk_analysis',
-            field=models.ForeignKey(related_name='additional_data', to='risks.RiskAnalysis'),
+            field=models.ForeignKey(related_name='additional_data', to='geonode_risks.RiskAnalysis'),
         ),
     ]
