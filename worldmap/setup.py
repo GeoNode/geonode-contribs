@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='geonode_worldmap',
-    version='0.2',
+    version='0.3',
     packages=find_packages(),
     include_package_data=True,
     license='GPL',
@@ -22,7 +22,7 @@ setup(
     install_requires=[
         'datautil==0.4',
         'dicttoxml==1.7.4',
-        'django-geoexplorer-worldmap==4.0.67',
+        'django-geoexplorer-worldmap==4.0.72',
         'flexidate==1.4',
         'geopy==1.20.0',
         'vectorformats==0.1',
