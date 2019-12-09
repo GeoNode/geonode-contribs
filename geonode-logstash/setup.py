@@ -29,7 +29,7 @@ setup(
         'Programming Language :: Python :: 2.7'
     ],
     install_requires=[
-        'python-logstash-async==1.5.1',
-        'django-celery-beat==1.1.1'
+        'python-logstash-async>=1.5.1',
+        'django-celery-beat>=1.1.1'
     ]
 )
