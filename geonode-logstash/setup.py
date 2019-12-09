@@ -30,6 +30,6 @@ setup(
     ],
     install_requires=[
         'python-logstash-async==1.5.1',
-        'django-celery-beat==1.1.1'
+        'django-celery-beat==1.5.0'
     ]
 )
