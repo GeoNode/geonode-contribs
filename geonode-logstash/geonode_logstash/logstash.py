@@ -333,7 +333,7 @@ class LogstashDispatcher(object):
                             self._logger.info(msg)
                     except Exception as e:
                         # Note: it catches exceptions on current thread only
-                        log.error("Sending data failed: ", e.message)
+                        log.error("Sending data failed: " + str(e))
                 # Updating CentralizedServer
                 self._update_server()
             else:
@@ -512,7 +512,7 @@ class LogstashDispatcher(object):
         Retrieving errors
         :return: errors count
         """
-        return ExceptionsListView.get_queryset(
+        return ExceptionsListView().get_queryset(
             valid_to=self._valid_to,
             valid_from=self._valid_from,
             interval=self._interval

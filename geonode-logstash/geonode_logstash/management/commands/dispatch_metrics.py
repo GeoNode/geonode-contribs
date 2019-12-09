@@ -28,3 +28,4 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         ld = LogstashDispatcher()
         ld.dispatch_metrics()
+
