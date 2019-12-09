@@ -441,11 +441,10 @@ class LogstashDispatcher(object):
                     if "countries" == data_name and 'name' in item_value:
                         try:
                             country = pycountry.countries.get(alpha_3=item_value['name']).name
-                            center = self._get_country_boundingbox(
-                                country=country, output_as='center')
+                            center = self._get_country_boundingbox(country=country.alpha_3)
                             item_value['center'] = center
                         except BaseException as e:
-                            logger.error(str(e))
+                            log.error(str(e))
                     if is_list:
                         try:
                             list_item = filter(
