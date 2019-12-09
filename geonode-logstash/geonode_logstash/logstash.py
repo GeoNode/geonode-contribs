@@ -24,7 +24,6 @@ import time
 import socket
 import logging
 import sqlite3
-import requests
 import pycountry
 
 from datetime import datetime, timedelta
@@ -49,7 +48,10 @@ from logstash_async.worker import LogProcessingWorker
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.handler import AsynchronousLogstashHandler
 
-from .models import CentralizedServer
+from .models import (
+    COUNTRIES_GEODB,
+    CentralizedServer
+)
 
 log = logging.getLogger(__name__)
 
@@ -536,37 +538,12 @@ class LogstashDispatcher(object):
         ).count()
 
     @staticmethod
-    def _get_country_boundingbox(country, output_as='boundingbox'):
-        """
-        get the bounding box of a country in EPSG4326 given a country name
-
-        Parameters
-        ----------
-        country : str
-            name of the country in english and lowercase
-        output_as : 'str
-            chose from 'boundingbox' or 'center'.
-            - 'boundingbox' for [latmin, latmax, lonmin, lonmax]
-            - 'center' for [latcenter, loncenter]
-
-        Returns
-        -------
-        output : list
-            list with coordinates as str
-        """
-        # create url
-        url = '{0}{1}{2}'.format('http://nominatim.openstreetmap.org/search?country=',
-                                country,
-                                '&format=json&polygon=0')
-        response = requests.get(url, timeout=60).json()[0]
-
-        # parse response to list
-        if output_as == 'boundingbox':
-            lst = response[output_as]
-            output = [float(i) for i in lst]
-        if output_as == 'center':
-            lst = [response.get(key) for key in ['lat', 'lon']]
-            output = [float(i) for i in lst]
+    def _get_country_boundingbox(iso_3):
+        output = None
+        for _cnt in COUNTRIES_GEODB:
+            if iso_3 == _cnt['country.iso_2']:
+                output = [float(i) for i in _cnt['country.center']]
+                break
         return output
 
     def test_dispatch(self, host=None, port=None):
