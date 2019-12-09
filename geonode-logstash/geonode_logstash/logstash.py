@@ -440,8 +440,9 @@ class LogstashDispatcher(object):
                     }
                     if "countries" == data_name and 'name' in item_value:
                         try:
-                            country = pycountry.countries.get(alpha_3=item_value['name']).alpha_3
-                            center = self._get_country_boundingbox(country=country)
+                            country_iso_3 = pycountry.countries.get(
+                                alpha_3=item_value['name']).alpha_3
+                            center = self._get_country_center(country_iso_3)
                             item_value['center'] = center
                         except BaseException as e:
                             log.error(str(e))
@@ -537,7 +538,7 @@ class LogstashDispatcher(object):
         ).count()
 
     @staticmethod
-    def _get_country_boundingbox(iso_3):
+    def _get_country_center(iso_3):
         output = None
         for _cnt in COUNTRIES_GEODB:
             if iso_3 == _cnt['country.iso_2']:
