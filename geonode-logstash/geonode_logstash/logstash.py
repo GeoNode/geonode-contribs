@@ -18,32 +18,38 @@
 #
 #########################################################################
 
-from logstash_async.handler import AsynchronousLogstashHandler
-from logstash_async.formatter import LogstashFormatter
-from logstash_async.transport import TcpTransport
-from logstash_async.database import DatabaseCache
-from logstash_async.worker import LogProcessingWorker
-from logstash_async.memory_cache import MemoryCache
-from logstash_async.constants import constants
-from logstash_async import EVENT_CACHE
-from datetime import datetime, timedelta
-from geonode.monitoring.models import EventType
-from models import CentralizedServer
-from geonode.layers.models import Layer
-from geonode.documents.models import Document
-from django_celery_beat.models import PeriodicTask
-from geonode.maps.models import Map
-from geonode.monitoring.views import ExceptionsListView
-from geonode.monitoring.collector import CollectorAPI
-import sqlite3
-import logging
 import zlib
-import socket
 import pytz
 import time
+import socket
+import logging
+import sqlite3
+import requests
+import pycountry
+
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django_celery_beat.models import PeriodicTask
+
+from geonode.maps.models import Map
+from geonode.layers.models import Layer
+from geonode.documents.models import Document
+from geonode.monitoring.models import EventType
+from geonode.monitoring.collector import CollectorAPI
+from geonode.monitoring.views import ExceptionsListView
+
+from logstash_async import EVENT_CACHE
+from logstash_async.constants import constants
+from logstash_async.database import DatabaseCache
+from logstash_async.transport import TcpTransport
+from logstash_async.memory_cache import MemoryCache
+from logstash_async.worker import LogProcessingWorker
+from logstash_async.formatter import LogstashFormatter
+from logstash_async.handler import AsynchronousLogstashHandler
+
+from .models import CentralizedServer
 
 log = logging.getLogger(__name__)
 
@@ -385,9 +391,12 @@ class LogstashDispatcher(object):
         :return: data dictionary
         """
         has_data = False
+        # Name of the object read by logstash filter (not used in case of "overview")
+        data_name = data_type["name"]
         # Define data HEADER
         data = {
             "format_version": "1.0",
+            "data_type": data_name,
             "instance": {
                 "name": settings.HOSTNAME,
                 "ip": self.client_ip
@@ -397,8 +406,6 @@ class LogstashDispatcher(object):
                 "endTime": unicode(self._valid_to.isoformat())
             }
         }
-        # Name of the object read by logstash filter (not used in case of "overview")
-        data_name = data_type["name"]
         # List data container (not used in case of "overview")
         list_data = []
         # For each metric we want to execute a query
@@ -429,6 +436,14 @@ class LogstashDispatcher(object):
                         k: self._build_data(item, v)
                         for k, v in metric["hooks"].iteritems()
                     }
+                    if "countries" == data_name and 'name' in item_value:
+                        try:
+                            country = pycountry.countries.get(alpha_3=item_value['name']).name
+                            center = self._get_country_boundingbox(
+                                country=country, output_as='center')
+                            item_value['center'] = center
+                        except BaseException as e:
+                            logger.error(str(e))
                     if is_list:
                         try:
                             list_item = filter(
@@ -519,6 +534,40 @@ class LogstashDispatcher(object):
             valid_from=self._valid_from,
             interval=self._interval
         ).count()
+
+    @staticmethod
+    def _get_country_boundingbox(country, output_as='boundingbox'):
+        """
+        get the bounding box of a country in EPSG4326 given a country name
+
+        Parameters
+        ----------
+        country : str
+            name of the country in english and lowercase
+        output_as : 'str
+            chose from 'boundingbox' or 'center'.
+            - 'boundingbox' for [latmin, latmax, lonmin, lonmax]
+            - 'center' for [latcenter, loncenter]
+
+        Returns
+        -------
+        output : list
+            list with coordinates as str
+        """
+        # create url
+        url = '{0}{1}{2}'.format('http://nominatim.openstreetmap.org/search?country=',
+                                country,
+                                '&format=json&polygon=0')
+        response = requests.get(url, timeout=60).json()[0]
+
+        # parse response to list
+        if output_as == 'boundingbox':
+            lst = response[output_as]
+            output = [float(i) for i in lst]
+        if output_as == 'center':
+            lst = [response.get(key) for key in ['lat', 'lon']]
+            output = [float(i) for i in lst]
+        return output
 
     def test_dispatch(self, host=None, port=None):
         """
