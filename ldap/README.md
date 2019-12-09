@@ -15,7 +15,6 @@ backend, based on django_auth_ldap.
 
 ## Installation
 
-
 Installing this contrib package is a matter of:
 
 1. [Installing geonode](http://geonode.org/#install)
@@ -67,6 +66,10 @@ pip install .
      specified it will default to `cn`, which means that the LDAP object's
      `common name` will be used for generating the name of the geonode group
 
+   * `GEONODE_LDAP_GROUP_PROFILE_MEMBER_ATTR` - This is the name of the LDAP
+     attribute that will be used for deriving the geonode membership. If not
+     specified it will default to `member`
+
 
 Example configuration:
 
@@ -108,6 +111,7 @@ AUTH_LDAP_MIRROR_GROUPS_EXCEPT = [
 # geonode.contrib.ldap configuration
 GEONODE_LDAP_GROUP_NAME_ATTRIBUTE = 'cn'
 GEONODE_LDAP_GROUP_PROFILE_FILTERSTR = '(ou=research group)'
+GEONODE_LDAP_GROUP_PROFILE_MEMBER_ATTR = 'uniqueMember'
 ```
 
 The configuration seen in the example above will allow LDAP users to login to

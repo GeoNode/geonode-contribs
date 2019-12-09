@@ -87,7 +87,8 @@ def sanitize_group_name(name):
 def _get_ldap_groups_filter(user, ldap_backend):
     if not hasattr(user, "ldap_user"):
         user = ldap_backend.populate_user(user.username)
-    return "(&{}(member={}))".format(
+    return "(&{}({}={}))".format(
         settings.LDAP_GROUP_PROFILE_FILTERSTR,
+        settings.LDAP_GROUP_PROFILE_MEMBER_ATTR,
         user.ldap_user.dn
     )
