@@ -28,15 +28,22 @@ class CentralizedServer(models.Model):
     """
     Centralized Server for monitoring/analytics metrics data
     """
-    host = models.GenericIPAddressField(
+    host = models.CharField(
+        max_length=255,
         null=False,
         blank=False,
-        help_text=_("Centralized Server IP address.")
+        help_text=_("Centralized Server IP address/Host name.")
     )
     port = models.IntegerField(
         null=False,
         blank=False,
         help_text=_("Centralized Server TCP port number.")
+    )
+    local_ip = models.GenericIPAddressField(
+        null=False,
+        blank=False,
+        protocol='IPv4',
+        help_text=_("Local Server IP address.")
     )
     interval = models.IntegerField(
         null=False,

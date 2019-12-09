@@ -214,7 +214,8 @@ class LogstashDispatcher(object):
                     host, port, database_path=db_path, transport=GeonodeTcpTransport
                 )
                 self._logger.addHandler(self._handler)
-                self.client_ip = socket.gethostbyname(socket.gethostname())
+                # self.client_ip = socket.gethostbyname(socket.gethostname())
+                self.client_ip = self._centralized_server.local_ip
                 self._collector = CollectorAPI()
                 self._set_time_range()
         else:
@@ -374,6 +375,7 @@ class LogstashDispatcher(object):
             self._valid_from = self._valid_to - timedelta(
                 seconds=self._centralized_server.interval
             )
+        self._valid_from = self._valid_from.replace(tzinfo=pytz.utc)
         self._interval = (self._valid_to - self._valid_from).total_seconds()
 
     def _get_message(self, data_type):
@@ -391,8 +393,8 @@ class LogstashDispatcher(object):
                 "ip": self.client_ip
             },
             "time": {
-                "startTime": unicode(self._valid_from),
-                "endTime": unicode(self._valid_to)
+                "startTime": unicode(self._valid_from.isoformat()),
+                "endTime": unicode(self._valid_to.isoformat())
             }
         }
         # Name of the object read by logstash filter (not used in case of "overview")
