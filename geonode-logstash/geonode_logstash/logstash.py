@@ -450,7 +450,7 @@ class LogstashDispatcher(object):
                             country_iso_3 = pycountry.countries.get(
                                 alpha_3=item_value['name']).alpha_3
                             center = self._get_country_center(country_iso_3)
-                            item_value['center'] = center
+                            item_value['center'] = center or ''
                         except BaseException as e:
                             log.error(str(e))
                     if is_list:
@@ -548,7 +548,7 @@ class LogstashDispatcher(object):
     def _get_country_center(iso_3):
         output = None
         for _cnt in COUNTRIES_GEODB:
-            if iso_3 == _cnt['country.iso_2']:
+            if iso_3 == _cnt['country.iso_3']:
                 output = [float(i) for i in _cnt['country.center']]
                 break
         return output
