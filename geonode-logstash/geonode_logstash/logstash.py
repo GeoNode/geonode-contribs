@@ -18,7 +18,7 @@
 #
 #########################################################################
 
-import zlib
+import gzip
 import pytz
 import time
 import socket
@@ -47,6 +47,11 @@ from logstash_async.memory_cache import MemoryCache
 from logstash_async.worker import LogProcessingWorker
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.handler import AsynchronousLogstashHandler
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from .models import (
     COUNTRIES_GEODB,
@@ -634,6 +639,7 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         Super method overriding to allow json compression
         :param record: message
         :return: gzip compressed message
+        :ref: https://stackoverflow.com/questions/8506897/how-do-i-gzip-compress-a-string-in-python
         """
         _output = self._serialize(record.msg)
         if self._gzip:
@@ -647,8 +653,10 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         :return: compressed object
         """
         try:
-            z = zlib.compressobj(-1, zlib.DEFLATED, 31)
-            gzip_j = sqlite3.Binary(z.compress(j) + z.flush())
+            _out = StringIO.StringIO()
+            with gzip.GzipFile(fileobj=_out, mode="w") as f:
+                f.write(j)
+            gzip_j = sqlite3.Binary(_out.getvalue())
         except BaseException as e:
             log.error(str(e))
         return gzip_j
