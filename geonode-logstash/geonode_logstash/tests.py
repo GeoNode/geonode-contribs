@@ -125,7 +125,7 @@ class GeonodeLogstashTest(GeoNodeBaseTestSupport):
         date_to = datetime.strptime('2019-09-11T20:00:00.000Z', '%Y-%m-%dT%H:%M:%S.%fZ')
         self._valid_to = pytz.utc.localize(date_to)
 
-    @override_settings(MONITORING_ENABLED=True, USER_ANALYTICS_ENABLED=True)
+    @override_settings(MONITORING_ENABLED=True, USER_ANALYTICS_ENABLED=True, USER_ANALYTICS_GZIP=True)
     def centralized_server_config_test(self):
         CentralizedServer.objects.get_or_create(
             host="192.168.1.95", port="5000", interval=3600
@@ -141,7 +141,7 @@ class GeonodeLogstashTest(GeoNodeBaseTestSupport):
         self.assertEqual(pt.interval.every, 3600)
         self.assertEqual(pt.interval.period, IntervalSchedule.SECONDS)
 
-    @override_settings(MONITORING_ENABLED=True, USER_ANALYTICS_ENABLED=True)
+    @override_settings(MONITORING_ENABLED=True, USER_ANALYTICS_ENABLED=True, USER_ANALYTICS_GZIP=True)
     def test_get_message(self):
         ld = LogstashDispatcher()
         ld._valid_from = self._valid_from
@@ -171,7 +171,7 @@ class GeonodeLogstashTest(GeoNodeBaseTestSupport):
             if data_type["name"] == "ua_families":
                 self.assertEqual(msg["ua_families"], self.ua_families)
 
-    @override_settings(MONITORING_ENABLED=True, USER_ANALYTICS_ENABLED=True)
+    @override_settings(MONITORING_ENABLED=True, USER_ANALYTICS_ENABLED=True, USER_ANALYTICS_GZIP=True)
     def test_format_record(self):
         ld = LogstashDispatcher()
         ld._valid_from = self._valid_from

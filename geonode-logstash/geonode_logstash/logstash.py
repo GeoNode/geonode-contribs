@@ -612,7 +612,6 @@ class GeonodeAsynchronousLogstashHandler(AsynchronousLogstashHandler):
         :param record: message to be formatted
         :return: formatted message
         """
-        log.debug(" ------------------------ _format_record ..... ")
         self._create_formatter_if_necessary()
         return self.formatter.format(record)
 
