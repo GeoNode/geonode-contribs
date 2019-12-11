@@ -56,6 +56,7 @@ from .models import (
 log = logging.getLogger(__name__)
 
 IS_ENABLED = settings.MONITORING_ENABLED and settings.USER_ANALYTICS_ENABLED
+GZIP_COMPRESSED = getattr(settings, 'USER_ANALYTICS_GZIP', False)
 
 
 class LogstashDispatcher(object):
@@ -264,6 +265,7 @@ class LogstashDispatcher(object):
         """
         cs = LogstashDispatcher._get_centralized_server()
         if cs and cs.socket_timeout is not None:
+            log.debug(" ---------------------- socket_timeout %s " % cs.socket_timeout)
             return cs.socket_timeout
         else:
             return constants.SOCKET_TIMEOUT
@@ -576,7 +578,7 @@ class GeonodeAsynchronousLogstashHandler(AsynchronousLogstashHandler):
 
     def __init__(self, *args, **kwargs):
         super(GeonodeAsynchronousLogstashHandler, self).__init__(*args, **kwargs)
-        self.formatter = GeonodeLogstashFormatter(gzip=True)
+        self.formatter = GeonodeLogstashFormatter(gzip=GZIP_COMPRESSED)
 
     def _start_worker_thread(self):
         """
@@ -605,6 +607,7 @@ class GeonodeAsynchronousLogstashHandler(AsynchronousLogstashHandler):
         :param record: message to be formatted
         :return: formatted message
         """
+        log.debug(" ------------------------ _format_record ..... ")
         self._create_formatter_if_necessary()
         return self.formatter.format(record)
 
@@ -632,10 +635,10 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         :param record: message
         :return: gzip compressed message
         """
+        _output = self._serialize(record.msg)
         if self._gzip:
-            return self.json_gzip(record.msg)
-        else:
-            return super(GeonodeLogstashFormatter, self).format(record)
+            _output = self.json_gzip(_output)
+        return _output
 
     def json_gzip(self, j):
         """
@@ -643,11 +646,11 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         :param j: input json to be compressed
         :return: compressed object
         """
-        z = zlib.compressobj(-1, zlib.DEFLATED, 31)
-        gzip_j = sqlite3.Binary(
-            z.compress(
-                self._serialize(j)
-            ) + z.flush())
+        try:
+            z = zlib.compressobj(-1, zlib.DEFLATED, 31)
+            gzip_j = sqlite3.Binary(z.compress(j) + z.flush())
+        except BaseException as e:
+            log.error(str(e))
         return gzip_j
 
 
