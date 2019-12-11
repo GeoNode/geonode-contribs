@@ -652,7 +652,7 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         :return: compressed object
         """
         try:
-            _out = StringIO.StringIO()
+            _out = StringIO()
             with gzip.GzipFile(fileobj=_out, mode="w") as f:
                 f.write(j)
             gzip_j = sqlite3.Binary(_out.getvalue())
