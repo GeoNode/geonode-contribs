@@ -63,143 +63,144 @@ log = logging.getLogger(__name__)
 IS_ENABLED = settings.MONITORING_ENABLED and settings.USER_ANALYTICS_ENABLED
 GZIP_COMPRESSED = getattr(settings, 'USER_ANALYTICS_GZIP', False)
 
+DATA_TYPES_MAP = [
+    {
+        "name": "overview",
+        "metrics": [
+            {
+                "name": "request.count",
+                "hooks": {
+                    "hits": "val"
+                }
+            },
+            {
+                "name": "request.users",
+                "params": {
+                    "group_by": "label"
+                },
+                "hooks": {
+                    "unique_visits": "val"
+                }
+            },
+            {
+                "name": "request.users",
+                "params": {
+                    "group_by": "user"
+                },
+                "hooks": {
+                    "unique_visitors": "val"
+                }
+            }
+        ],
+        "extra": [
+            "registered_users",
+            "layers",
+            "documents",
+            "maps",
+            "errors"
+        ]
+    },
+    {
+        "name": "resources",
+        "metrics": [
+            {
+                "name": "request.count",
+                "params": {
+                    "group_by": "resource"
+                },
+                "hooks": {
+                    "name": "resource.name",
+                    "type": "resource.type",
+                    "url": "resource.href",
+                    "hits": "val",
+                }
+            },
+            {
+                "name": "request.users",
+                "params": {
+                    "group_by": "resource_on_label"
+                },
+                "hooks": {
+                    "name": "resource.name",
+                    "unique_visits": "val"
+                }
+            },
+            {
+                "name": "request.users",
+                "params": {
+                    "group_by": "resource_on_user"
+                },
+                "hooks": {
+                    "name": "resource.name",
+                    "unique_visitors": "val"
+                }
+            },
+            {
+                "name": "request.count",
+                "params": {
+                    "group_by": "resource",
+                    "event_type": EventType.EVENT_DOWNLOAD
+                },
+                "hooks": {
+                    "name": "resource.name",
+                    "downloads": "val"
+                }
+            },
+            {
+                "name": "request.count",
+                "params": {
+                    "group_by": "resource",
+                    "event_type": EventType.EVENT_OWS
+                },
+                "hooks": {
+                    "name": "resource.name",
+                    "ogc_hits": "val"
+                }
+            },
+            {
+                "name": "request.count",
+                "params": {
+                    "group_by": "resource",
+                    "event_type": EventType.EVENT_PUBLISH
+                },
+                "hooks": {
+                    "name": "resource.name",
+                    "publications": "val"
+                }
+            }
+        ],
+    },
+    {
+        "name": "countries",
+        "metrics": [
+            {
+                "name": "request.country",
+                "hooks": {
+                    "name": "label",
+                    "hits": "val"
+                }
+            }
+        ],
+    },
+    {
+        "name": "ua_families",
+        "metrics": [
+            {
+                "name": "request.ua.family",
+                "hooks": {
+                    "name": "label",
+                    "hits": "val"
+                }
+            }
+        ]
+    }
+]
+
 
 class LogstashDispatcher(object):
     """
     Dispatcher of GeoNode metric data for Logstash server
     """
-    DATA_TYPES_MAP = [
-        {
-            "name": "overview",
-            "metrics": [
-                {
-                    "name": "request.count",
-                    "hooks": {
-                        "hits": "val"
-                    }
-                },
-                {
-                    "name": "request.users",
-                    "params": {
-                        "group_by": "label"
-                    },
-                    "hooks": {
-                        "unique_visits": "val"
-                    }
-                },
-                {
-                    "name": "request.users",
-                    "params": {
-                        "group_by": "user"
-                    },
-                    "hooks": {
-                        "unique_visitors": "val"
-                    }
-                }
-            ],
-            "extra": [
-                "registered_users",
-                "layers",
-                "documents",
-                "maps",
-                "errors"
-            ]
-        },
-        {
-            "name": "resources",
-            "metrics": [
-                {
-                    "name": "request.count",
-                    "params": {
-                        "group_by": "resource"
-                    },
-                    "hooks": {
-                        "name": "resource.name",
-                        "type": "resource.type",
-                        "url": "resource.href",
-                        "hits": "val",
-                    }
-                },
-                {
-                    "name": "request.users",
-                    "params": {
-                        "group_by": "resource_on_label"
-                    },
-                    "hooks": {
-                        "name": "resource.name",
-                        "unique_visits": "val"
-                    }
-                },
-                {
-                    "name": "request.users",
-                    "params": {
-                        "group_by": "resource_on_user"
-                    },
-                    "hooks": {
-                        "name": "resource.name",
-                        "unique_visitors": "val"
-                    }
-                },
-                {
-                    "name": "request.count",
-                    "params": {
-                        "group_by": "resource",
-                        "event_type": EventType.EVENT_DOWNLOAD
-                    },
-                    "hooks": {
-                        "name": "resource.name",
-                        "downloads": "val"
-                    }
-                },
-                {
-                    "name": "request.count",
-                    "params": {
-                        "group_by": "resource",
-                        "event_type": EventType.EVENT_OWS
-                    },
-                    "hooks": {
-                        "name": "resource.name",
-                        "ogc_hits": "val"
-                    }
-                },
-                {
-                    "name": "request.count",
-                    "params": {
-                        "group_by": "resource",
-                        "event_type": EventType.EVENT_PUBLISH
-                    },
-                    "hooks": {
-                        "name": "resource.name",
-                        "publications": "val"
-                    }
-                }
-            ],
-        },
-        {
-            "name": "countries",
-            "metrics": [
-                {
-                    "name": "request.country",
-                    "hooks": {
-                        "name": "label",
-                        "hits": "val"
-                    }
-                }
-            ],
-        },
-        {
-            "name": "ua_families",
-            "metrics": [
-                {
-                    "name": "request.ua.family",
-                    "hooks": {
-                        "name": "label",
-                        "hits": "val"
-                    }
-                }
-            ]
-        }
-    ]
 
     def __init__(self):
         self._centralized_server = None
@@ -342,11 +343,12 @@ class LogstashDispatcher(object):
         """
         if self._centralized_server:
             if IS_ENABLED:
-                for data_type in self.DATA_TYPES_MAP:
+                for data_type in DATA_TYPES_MAP:
                     try:
                         msg = self._get_message(data_type)
                         if msg:
                             self._logger.info(msg)
+                            time.sleep(LogstashDispatcher.get_socket_timeout())
                     except Exception as e:
                         # Note: it catches exceptions on current thread only
                         log.error("Sending data failed: " + str(e))
@@ -363,7 +365,7 @@ class LogstashDispatcher(object):
         :return: None
         """
         # We have to wait for db to be updated
-        time.sleep(5)
+        time.sleep(LogstashDispatcher.get_logstash_db_timeout())
         # We have to retrieve the "entry_date" of the last event in queue
         last_event_date = self._handler.get_last_entry_date()
         if last_event_date:
@@ -445,10 +447,10 @@ class LogstashDispatcher(object):
                         k: self._build_data(item, v)
                         for k, v in metric["hooks"].iteritems()
                     }
-                    if "countries" == data_name and 'name' in item_value:
+                    if "countries" == data_name:
                         try:
                             country_iso_3 = pycountry.countries.get(
-                                alpha_3=item_value['name']).alpha_3
+                                alpha_3=name_value).alpha_3
                             center = self._get_country_center(country_iso_3)
                             item_value['center'] = center or ''
                         except BaseException as e:
