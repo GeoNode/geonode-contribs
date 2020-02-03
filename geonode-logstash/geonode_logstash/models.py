@@ -21,7 +21,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_noop as _
-from django_celery_beat.models import PeriodicTask, IntervalSchedule
+# from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 # center = [Lat, Lon]
 COUNTRIES_GEODB = [
@@ -2081,38 +2081,38 @@ class CentralizedServer(models.Model):
         # self.sync_periodic_task()
         super(CentralizedServer, self).save(*args, **kwargs)
 
-    def sync_periodic_task(self):
-        """
-        Sync django_celery_beat
-        """
-        if settings.MONITORING_ENABLED and settings.USER_ANALYTICS_ENABLED:
-            try:
-                i, _ci = IntervalSchedule.objects.get_or_create(
-                    every=self.interval, period=IntervalSchedule.SECONDS
-                )
-            except IntervalSchedule.MultipleObjectsReturned:
-                i = IntervalSchedule.objects.filter(
-                    every=self.interval, period=IntervalSchedule.SECONDS
-                ).first()
-            try:
-                pt, _cpt = PeriodicTask.objects.get_or_create(
-                    name="dispatch-metrics-task",
-                    task="geonode_logstash.tasks.dispatch_metrics",
-                )
-            except PeriodicTask.MultipleObjectsReturned:
-                pt = PeriodicTask.objects.filter(
-                    name="dispatch-metrics-task",
-                    task="geonode_logstash.tasks.dispatch_metrics",
-                ).first()
-            pt.interval = i
-            pt.enabled = True
-            pt.save()
-        else:
-            # When MONITORING_ENABLED=True and USER_ANALYTICS_ENABLED=False we have to disable the task
-            pts = PeriodicTask.objects.filter(
-                name="dispatch-metrics-task",
-                task="geonode_logstash.tasks.dispatch_metrics",
-            )
-            for pt in pts:
-                pt.enabled = False
-                pt.save()
+    # def sync_periodic_task(self):
+    #     """
+    #     Sync django_celery_beat
+    #     """
+    #     if settings.MONITORING_ENABLED and settings.USER_ANALYTICS_ENABLED:
+    #         try:
+    #             i, _ci = IntervalSchedule.objects.get_or_create(
+    #                 every=self.interval, period=IntervalSchedule.SECONDS
+    #             )
+    #         except IntervalSchedule.MultipleObjectsReturned:
+    #             i = IntervalSchedule.objects.filter(
+    #                 every=self.interval, period=IntervalSchedule.SECONDS
+    #             ).first()
+    #         try:
+    #             pt, _cpt = PeriodicTask.objects.get_or_create(
+    #                 name="dispatch-metrics-task",
+    #                 task="geonode_logstash.tasks.dispatch_metrics",
+    #             )
+    #         except PeriodicTask.MultipleObjectsReturned:
+    #             pt = PeriodicTask.objects.filter(
+    #                 name="dispatch-metrics-task",
+    #                 task="geonode_logstash.tasks.dispatch_metrics",
+    #             ).first()
+    #         pt.interval = i
+    #         pt.enabled = True
+    #         pt.save()
+    #     else:
+    #         # When MONITORING_ENABLED=True and USER_ANALYTICS_ENABLED=False we have to disable the task
+    #         pts = PeriodicTask.objects.filter(
+    #             name="dispatch-metrics-task",
+    #             task="geonode_logstash.tasks.dispatch_metrics",
+    #         )
+    #         for pt in pts:
+    #             pt.enabled = False
+    #             pt.save()
