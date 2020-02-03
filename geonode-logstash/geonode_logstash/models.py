@@ -2078,7 +2078,7 @@ class CentralizedServer(models.Model):
         Overriding the 'save' super method.
         We have to sync PeriodicTask with CentralizedServer
         """
-        self.sync_periodic_task()
+        # self.sync_periodic_task()
         super(CentralizedServer, self).save(*args, **kwargs)
 
     def sync_periodic_task(self):
