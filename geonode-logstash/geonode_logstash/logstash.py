@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django_celery_beat.models import PeriodicTask
+# from django_celery_beat.models import PeriodicTask
 
 from geonode.maps.models import Map
 from geonode.layers.models import Layer
@@ -215,7 +215,7 @@ class LogstashDispatcher(object):
         Initializing Dispatcher with basic information
         :return: None
         """
-        self.manage_task()
+        # self.manage_task()
         if IS_ENABLED:
             self._centralized_server = self._get_centralized_server()
             if self._centralized_server:
@@ -236,18 +236,18 @@ class LogstashDispatcher(object):
         else:
             log.error("Monitoring/analytics disabled, centralized server cannot be set up.")
 
-    @staticmethod
-    def manage_task():
-        """
-        Disable celery task
-        """
-        pts = PeriodicTask.objects.filter(
-            name="dispatch-metrics-task",
-            task="geonode_logstash.tasks.dispatch_metrics",
-        )
-        for pt in pts:
-            pt.enabled = IS_ENABLED
-            pt.save()
+    # @staticmethod
+    # def manage_task():
+    #     """
+    #     Disable celery task
+    #     """
+    #     pts = PeriodicTask.objects.filter(
+    #         name="dispatch-metrics-task",
+    #         task="geonode_logstash.tasks.dispatch_metrics",
+    #     )
+    #     for pt in pts:
+    #         pt.enabled = IS_ENABLED
+    #         pt.save()
 
     @staticmethod
     def _get_centralized_server():
