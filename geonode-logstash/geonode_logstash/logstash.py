@@ -386,12 +386,9 @@ class LogstashDispatcher(object):
         :return: None
         """
         self._valid_to = datetime.utcnow().replace(tzinfo=pytz.utc)
-        if self._centralized_server.last_successful_deliver:
-            self._valid_from = self._centralized_server.last_successful_deliver
-        else:
-            self._valid_from = self._valid_to - timedelta(
-                seconds=self._centralized_server.interval
-            )
+        self._valid_from = self._valid_to - timedelta(
+            seconds=self._centralized_server.interval
+        )
         self._valid_from = self._valid_from.replace(tzinfo=pytz.utc)
         self._interval = (self._valid_to - self._valid_from).total_seconds()
 
