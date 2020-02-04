@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
-
+import json
 import gzip
 import pytz
 import time
@@ -652,8 +652,10 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         """
         try:
             _out = StringIO()
-            with gzip.GzipFile(fileobj=_out, mode="w") as f:
-                f.write(j)
+            json_str = json.dumps(j) + "\n"
+            json_bytes = json_str.encode('utf-8')
+            with gzip.GzipFile(fileobj=_out, mode="w") as fout:
+                fout.write(json_bytes)
             gzip_j = sqlite3.Binary(_out.getvalue())
         except BaseException as e:
             log.error(str(e))
