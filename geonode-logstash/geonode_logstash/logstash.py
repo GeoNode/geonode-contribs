@@ -219,7 +219,7 @@ class LogstashDispatcher(object):
         if IS_ENABLED:
             self._centralized_server = self._get_centralized_server()
             if self._centralized_server:
-                self._centralized_server.sync_periodic_task()
+                # self._centralized_server.sync_periodic_task()
                 host = self._centralized_server.host
                 port = self._centralized_server.port
                 db_path = self._centralized_server.db_path if self._centralized_server.db_path else None
@@ -644,7 +644,7 @@ class GeonodeLogstashFormatter(LogstashFormatter):
             _output = self.json_gzip(_output)
         return _output
 
-    def json_gzip(self, j):
+    def json_gzip(self, data):
         """
         Gzip compression of serialized json
         :param j: input json to be compressed
@@ -652,10 +652,8 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         """
         try:
             _out = StringIO()
-            json_str = json.dumps(j) + "\n"
-            json_bytes = json_str.encode('utf-8')
             with gzip.GzipFile(fileobj=_out, mode="w") as fout:
-                fout.write(json_bytes)
+                fout.write(data)
             gzip_j = sqlite3.Binary(_out.getvalue())
         except BaseException as e:
             log.error(str(e))
