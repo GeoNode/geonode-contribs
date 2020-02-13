@@ -652,8 +652,9 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         """
         try:
             _out = StringIO()
-            with gzip.GzipFile(fileobj=_out, mode="w") as fout:
+            with gzip.GzipFile(fileobj=_out, mode="w", buffering=0) as fout:
                 fout.write(data)
+                fout.flush()
             gzip_j = sqlite3.Binary(_out.getvalue())
         except BaseException as e:
             log.error(str(e))
