@@ -639,7 +639,11 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         :return: gzip compressed message
         :ref: https://stackoverflow.com/questions/8506897/how-do-i-gzip-compress-a-string-in-python
         """
+        log.info(" 1 ............................................................... ")
+        log.info(record.msg)
         _output = self._serialize(record.msg)
+        log.info(" 2 ............................................................... ")
+        log.info(_output)
         if self._gzip:
             _output = self.json_gzip(_output)
         return _output
@@ -652,8 +656,10 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         """
         try:
             _out = StringIO()
-            with gzip.GzipFile(fileobj=_out, mode="w", buffering=0) as fout:
+            with gzip.GzipFile(fileobj=_out, mode="w") as fout:
                 fout.write(data)
+                fout.flush()
+                fout.write("\n")
                 fout.flush()
             gzip_j = sqlite3.Binary(_out.getvalue())
         except BaseException as e:
