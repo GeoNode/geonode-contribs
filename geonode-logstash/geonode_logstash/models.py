@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
-
+import uuid
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_noop as _
@@ -2012,7 +2012,7 @@ class CentralizedServer(models.Model):
         max_length=500,
         null=True,
         blank=True,
-        default="logstash.db",
+        default="logstash_{}.db".format(str(uuid.uuid4())[:8]),
         help_text=_("The local SQLite database to cache log events between emitting and "
                     "transmission to the Logstash server. "
                     "This way log events are cached even across process restarts (and crashes).")
@@ -2020,7 +2020,7 @@ class CentralizedServer(models.Model):
     socket_timeout = models.FloatField(
         null=True,
         blank=True,
-        default=5.0,
+        default=20.0,
         help_text=_("Timeout in seconds for TCP connections.")
     )
     queue_check_interval = models.FloatField(
@@ -2038,7 +2038,7 @@ class CentralizedServer(models.Model):
     queue_events_flush_count = models.IntegerField(
         null=True,
         blank=True,
-        default=50,
+        default=10,
         help_text=_("Count of cached events to send from the database to Logstash; "
                     "events are sent to Logstash whenever QUEUED_EVENTS_FLUSH_COUNT or "
                     "QUEUED_EVENTS_FLUSH_INTERVAL is reached, whatever happens first.")
@@ -2046,7 +2046,7 @@ class CentralizedServer(models.Model):
     queue_events_batch_size = models.IntegerField(
         null=True,
         blank=True,
-        default=50,
+        default=10,
         help_text=_("Maximum number of events to be sent to Logstash in one batch. "
                     "Depending on the transport, this usually means a new connection to the Logstash is "
                     "established for the event batch.")
