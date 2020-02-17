@@ -38,7 +38,7 @@ from geonode.security.utils import get_visible_resources
 register = template.Library()
 
 
-@register.assignment_tag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def site_facets(context):
     request = context['request']
     title_filter = request.GET.get('title__icontains', '')

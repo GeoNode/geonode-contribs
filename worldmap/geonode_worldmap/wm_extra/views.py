@@ -84,7 +84,7 @@ def ajax_layer_download_check(request, layername):
     can_download = False
     layer = get_object_or_404(Layer, typename=layername)
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if layer.owner == request.user:
             can_download = True
         else:
@@ -271,7 +271,7 @@ def map_json_wm(request, mapid, snapshot=None):
             json.dumps(
                 map_obj.viewer_json(request)))
     elif request.method == 'PUT':
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return HttpResponse(
                 _PERMISSION_MSG_LOGIN,
                 status=401,
@@ -334,7 +334,7 @@ def new_map_json_wm(request):
             return HttpResponse(config)
 
     elif request.method == 'POST':
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return HttpResponse(
                 'You must be logged in to save new maps',
                 content_type="text/plain",
@@ -390,7 +390,7 @@ def new_map_config(request):
 
         map_obj.abstract = DEFAULT_ABSTRACT
         map_obj.title = DEFAULT_TITLE
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             map_obj.owner = request.user
 
         config = map_obj.viewer_json(request)
