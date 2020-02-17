@@ -27,7 +27,7 @@ import types
 from StringIO import StringIO
 
 from django.test import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from factory.django import DjangoModelFactory
 from factory import SubFactory
 from factory.fuzzy import FuzzyText

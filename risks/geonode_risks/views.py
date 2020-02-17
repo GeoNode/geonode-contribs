@@ -26,7 +26,7 @@ import logging
 from django.conf import settings
 from django import forms
 from django.views.generic import TemplateView, View, FormView
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile, File
 from django.http import HttpResponse, FileResponse
