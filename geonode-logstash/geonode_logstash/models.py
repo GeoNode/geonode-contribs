@@ -1982,6 +1982,7 @@ COUNTRIES_GEODB = [
 
 
 class CentralizedServer(models.Model):
+
     """
     Centralized Server for monitoring/analytics metrics data
     """
@@ -1999,7 +2000,7 @@ class CentralizedServer(models.Model):
     local_ip = models.GenericIPAddressField(
         null=False,
         blank=False,
-        protocol='IPv4',
+        protocol='ipv4',
         help_text=_("Local Server IP address.")
     )
     interval = models.IntegerField(

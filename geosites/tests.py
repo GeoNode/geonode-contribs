@@ -23,7 +23,7 @@ import json
 from tastypie.test import ResourceTestCaseMixin
 from django.test.utils import override_settings
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from guardian.shortcuts import get_anonymous_user
 from guardian.shortcuts import remove_perm
