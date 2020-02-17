@@ -106,7 +106,7 @@ class SiteCountJSONSerializer(CountJSONSerializer):
             resources = resources.filter(title__icontains=options['title_filter'])
 
         if options['type_filter']:
-            resources = resources.instance_of(options['type_filter'])
+            resources = resources.filter(polymorphic_ctype__model=options['type_filter'])
 
         resources = resources.filter(id__in=resources_for_site())
         counts = list(resources.values(options['count_type']).annotate(count=Count(options['count_type'])))

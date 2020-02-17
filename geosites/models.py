@@ -36,7 +36,7 @@ class SiteResources(models.Model):
     site = models.OneToOneField(Site)
     resources = models.ManyToManyField(ResourceBase, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.site.name
 
     class Meta:
@@ -48,7 +48,7 @@ class SitePeople(models.Model):
     site = models.OneToOneField(Site)
     people = models.ManyToManyField(Profile, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.site.name
 
     class Meta:
@@ -60,7 +60,7 @@ class SiteGroups(models.Model):
     site = models.OneToOneField(Site)
     groups = models.ManyToManyField(GroupProfile, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.site.name
 
     class Meta:

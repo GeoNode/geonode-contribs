@@ -129,7 +129,7 @@ def layer_acls(request):
     # use of polymorphic selectors/functions to optimize performances
     site_resources = resources_for_site()
     resources_readable = get_objects_for_user(acl_user, 'view_resourcebase',
-                                              ResourceBase.objects.instance_of(Layer).filter(id__in=site_resources))
+                                              ResourceBase.objects.filter(polymorphic_ctype__model='layer').filter(id__in=site_resources))
     layer_writable = get_objects_for_user(acl_user, 'change_layer_data',
                                           Layer.objects.filter(id__in=site_resources))
 
@@ -144,9 +144,9 @@ def layer_acls(request):
         'ro': list(read_only),
         'name': acl_user.username,
         'is_superuser': acl_user.is_superuser,
-        'is_anonymous': acl_user.is_anonymous(),
+        'is_anonymous': acl_user.is_anonymous,
     }
-    if acl_user.is_authenticated():
+    if acl_user.is_authenticated:
         result['fullname'] = acl_user.get_full_name()
         result['email'] = acl_user.email
 
