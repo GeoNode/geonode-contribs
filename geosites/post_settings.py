@@ -31,7 +31,7 @@
 try:
     # load in local_settings from system installed geonode
     execfile(os.path.join(GEONODE_ROOT, 'local_settings.py'))
-except BaseException:
+except Exception:
     # there are no system geonode local_settings to import
     pass
 
@@ -41,7 +41,7 @@ from urlparse import urljoin
 try:
     # load in local_settings (usually for setting SITEURL and DATABASES for production)
     execfile(os.path.join(SITE_ROOT, '../', 'local_settings.py'))
-except BaseException:
+except Exception:
     # there are no master local_settings to import
     pass
 
@@ -49,7 +49,7 @@ except BaseException:
 try:
     # load in local_settings (usually for setting SITEURL and DATABASES for production)
     execfile(os.path.join(SITE_ROOT, 'local_settings.py'))
-except BaseException:
+except Exception:
     # there are no site local_settings to import
     pass
 
@@ -135,7 +135,7 @@ if DEBUG_TOOLBAR:
 
     def show_if_superuser(request):
         return True if request.user.is_superuser else False
-    MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+    MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
     INSTALLED_APPS += ('debug_toolbar',)
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,

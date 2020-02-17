@@ -19,12 +19,13 @@
 #########################################################################
 
 from django.contrib import admin
-from django.http import HttpResponseRedirect
-from logstash import LogstashDispatcher
 from django.contrib import messages
+from django.http import HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
-from models import CentralizedServer
+
+from geonode_logstash.models import CentralizedServer
+from geonode_logstash.logstash import LogstashDispatcher
 
 csrf_protect_m = method_decorator(csrf_protect)
 

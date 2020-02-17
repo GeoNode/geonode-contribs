@@ -1982,6 +1982,7 @@ COUNTRIES_GEODB = [
 
 
 class CentralizedServer(models.Model):
+
     """
     Centralized Server for monitoring/analytics metrics data
     """

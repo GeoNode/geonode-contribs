@@ -11,10 +11,13 @@ Quick start
 
 1. Add "logstash" to your INSTALLED_APPS setting like this::
 
-    GEONODE_CONTRIB_APPS = [
-        ...
-        'geonode_logstash',
-    ]
+    if 'geonode_logstash' not in INSTALLED_APPS:
+        INSTALLED_APPS += ('geonode_logstash',)
+
+        CELERY_BEAT_SCHEDULE['dispatch_metrics'] = {
+            'task': 'geonode_logstash.tasks.dispatch_metrics',
+            'schedule': 3600.0,
+        }
 
 3. Run `python manage.py migrate` to create the logstash models.
 
