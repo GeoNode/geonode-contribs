@@ -27,13 +27,12 @@ import types
 from StringIO import StringIO
 
 from django.test import Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from factory.django import DjangoModelFactory
 from factory import SubFactory
 from factory.fuzzy import FuzzyText
 
 from geonode.base.models import ResourceBase
-from geonode.utils import designals, resignals
 from .models import (DymensionInfo, AnalysisType, RiskAnalysis, 
                      Layer, FurtherResource, AdministrativeDivision,
                      AnalysisTypeFurtherResourceAssociation,
@@ -143,11 +142,10 @@ class RisksViewTestCase(RisksTestCase):
         l0_data = json.loads(l0.content)
         self.assertEqual(l0.status_code, 200)
         self.assertEqual(l0_data.get('data').get('layers'), [])
-        designals()
+
         _layers = []
         for lname in ['l1', 'l2', 'l3']:
             _layers.append(Layer.objects.create(name=lname))
-        resignals()
 
         to_add = [str(_l.id) for _l in _layers[:2]]
 
@@ -260,7 +258,7 @@ class RisksViewTestCase(RisksTestCase):
                     self.assertEqual(len(d['values']), len(l_keys))
                     self.assertEqual(set(d['values']), set(l_keys))
                     
-                    for lname, ldict in d['layers'].iteritems():
+                    for lname, ldict in d['layers'].items():
                         self.assertTrue(isinstance(ldict, types.DictType))
                         self.assertTrue(isinstance(ldict['layerAttribute'], types.StringTypes))
                         self.assertTrue(ldict['layerAttribute'])

@@ -24,6 +24,7 @@ import time
 import socket
 import logging
 import sqlite3
+import traceback
 import pycountry
 
 from datetime import datetime, timedelta
@@ -346,11 +347,14 @@ class LogstashDispatcher(object):
                 for data_type in DATA_TYPES_MAP:
                     try:
                         msg = self._get_message(data_type)
+                        print(" ------------------------------------------------ ")
+                        print(msg)
                         if msg:
                             self._logger.info(msg)
                             time.sleep(LogstashDispatcher.get_socket_timeout())
                     except Exception as e:
                         # Note: it catches exceptions on current thread only
+                        traceback.print_exc()
                         log.error("Sending data failed: " + str(e))
                 # Updating CentralizedServer
                 self._update_server()
@@ -410,8 +414,8 @@ class LogstashDispatcher(object):
                 "ip": self.client_ip
             },
             "time": {
-                "startTime": unicode(self._valid_from.isoformat()),
-                "endTime": unicode(self._valid_to.isoformat())
+                "startTime": self._valid_from.isoformat(),
+                "endTime": self._valid_to.isoformat()
             }
         }
         # List data container (not used in case of "overview")
@@ -442,7 +446,7 @@ class LogstashDispatcher(object):
                         name_value = self._build_data(item, metric["hooks"]["name"])
                     item_value = {
                         k: self._build_data(item, v)
-                        for k, v in metric["hooks"].iteritems()
+                        for k, v in metric["hooks"].items()
                     }
                     if "countries" == data_name:
                         try:
@@ -450,16 +454,17 @@ class LogstashDispatcher(object):
                                 alpha_3=name_value).alpha_3
                             center = self._get_country_center(country_iso_3)
                             item_value['center'] = center or ''
-                        except BaseException as e:
+                        except Exception as e:
                             log.error(str(e))
                     if is_list:
                         try:
                             list_item = filter(
                                 lambda l_item: l_item["name"] == name_value, list_data
-                            )[0]
-                            i = list_data.index(list_item)
+                            )
+                            _idx = list(list_item)[0]
+                            i = list_data.index(_idx)
                             list_data[i].update(item_value)
-                        except IndexError:
+                        except (IndexError, ValueError) as e:
                             list_data.append(item_value)
                     else:
                         data.update(item_value)
@@ -660,7 +665,7 @@ class GeonodeLogstashFormatter(LogstashFormatter):
                     fout.write(data)
                     fout.flush()
                 gzip_j = sqlite3.Binary(_out.getvalue())
-            except BaseException as e:
+            except Exception as e:
                 log.error(str(e))
         return gzip_j
 

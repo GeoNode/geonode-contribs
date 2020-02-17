@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='centralizedserver',
             name='local_ip',
-            field=models.GenericIPAddressField(default='127.0.0.1', help_text=b'Local Server IP address.', protocol=b'IPv4'),
+            field=models.GenericIPAddressField(
+                default='127.0.0.1', help_text=b'Local Server IP address.', protocol='ipv4'),
             preserve_default=False,
         ),
         migrations.AlterField(

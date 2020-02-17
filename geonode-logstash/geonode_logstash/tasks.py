@@ -19,7 +19,7 @@
 #########################################################################
 
 from celery import shared_task
-from logstash import LogstashDispatcher
+from geonode_logstash.logstash import LogstashDispatcher
 
 
 @shared_task

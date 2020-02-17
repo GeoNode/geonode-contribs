@@ -41,7 +41,7 @@ from django.conf import settings
 from django.test.utils import override_settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management import call_command
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.staticfiles.templatetags import staticfiles
 from django.contrib.auth import get_user_model
 # from guardian.shortcuts import assign_perm

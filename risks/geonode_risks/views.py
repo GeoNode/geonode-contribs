@@ -26,7 +26,7 @@ import logging
 from django.conf import settings
 from django import forms
 from django.views.generic import TemplateView, View, FormView
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile, File
 from django.http import HttpResponse, FileResponse
@@ -219,7 +219,7 @@ class FeaturesSource(object):
 
     def url_kwargs_to_query_params(self, **kwargs):
         out = {}
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             if self.KWARGS_MAPPING.get(k):
                 new_k = self.KWARGS_MAPPING[k]
                 out[new_k] = v
@@ -820,7 +820,7 @@ class PDFReportView(ContextAware, FormView):
 
         randomizer = get_random_string(7)
         cleanup_paths = []
-        for k, v in form.cleaned_data.iteritems():
+        for k, v in form.cleaned_data.items():
             if v is None:
                 continue
             if not isinstance(v, File):

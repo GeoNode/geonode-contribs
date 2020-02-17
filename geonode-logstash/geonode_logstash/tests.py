@@ -25,8 +25,8 @@ import binascii
 from geonode.tests.base import GeoNodeBaseTestSupport
 from django.test.utils import override_settings
 from django.core.management import call_command
-from models import CentralizedServer
-from logstash import LogstashDispatcher
+from geonode_logstash.models import CentralizedServer
+from geonode_logstash.logstash import LogstashDispatcher
 # from django_celery_beat.models import PeriodicTask, IntervalSchedul
 
 logger = logging.getLogger(__name__)

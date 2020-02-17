@@ -801,7 +801,7 @@ def gxp2wm(config, map_obj=None):
             config["map"]["groups"] = uniqifydict(json.loads(map_obj.extmap.group_params), 'group')
     else:
         # TODO check if this works with different languages
-        config['about']['introtext'] = unicode(settings.DEFAULT_MAP_ABSTRACT)
+        config['about']['introtext'] = settings.DEFAULT_MAP_ABSTRACT
 
     if not [d for d in config['map']['groups'] if d['group'] == group]:
         for group in groups:
@@ -932,7 +932,7 @@ def snapshot_config(snapshot, map_obj, request):
 
     # Match up the layer with it's source
     def snapsource_lookup(source, sources):
-        for k, v in sources.iteritems():
+        for k, v in sources.items():
             if v.get("id") == source.get("id"):
                 return k
         return None

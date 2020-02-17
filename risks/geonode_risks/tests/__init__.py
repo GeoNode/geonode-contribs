@@ -24,8 +24,6 @@ from django.test import TestCase
 from django.db import connections
 from django.core.management import call_command
 
-from geonode.utils import designals, resignals
-
 TESTDATA_SQL_INIT = os.path.join(
     os.path.dirname(__file__),
     'resources/test_data_setup.sql')
@@ -48,7 +46,6 @@ class RisksTestCase(TestCase):
 
     def setUp(self):
         # Test initialization
-        designals()
         call_command('loaddata', '005_risks_test_layer')
 
         # Prepare Test Tables
@@ -61,8 +58,6 @@ class RisksTestCase(TestCase):
 
     def tearDown(self):
         # Test deinit
-        resignals()
-
         # Cleanup Test Tables
         with connections['datastore'].cursor() as cursor:
             sql_file = open(TESTDATA_SQL_TEARDOWN, 'r')

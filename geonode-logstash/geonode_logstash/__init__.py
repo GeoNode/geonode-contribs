@@ -23,6 +23,7 @@ from django.apps import AppConfig
 
 class LogstashAppConfig(AppConfig):
     name = 'geonode_logstash'
+    label = 'geonode_logstash'
 
 
 default_app_config = 'geonode_logstash.LogstashAppConfig'

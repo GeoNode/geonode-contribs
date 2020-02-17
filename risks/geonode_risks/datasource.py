@@ -144,11 +144,11 @@ class GeoserverDataSource(object):
 
     def prepare_vparams(self, vparams, separator=":"):
         u = urllib.quote
-        return [separator.join((u(k), u(str(v)),)) for k, v in vparams.iteritems()]
+        return [separator.join((u(k), u(str(v)),)) for k, v in vparams.items()]
 
     def prepare_cql_params(self, vparams, separator="="):
         u = urllib.quote
-        return [separator.join((u(k), "'{}'".format(v),)) for k, v in vparams.iteritems()]
+        return [separator.join((u(k), "'{}'".format(v),)) for k, v in vparams.items()]
 
     def get_features(self, layer_name, dim_name=None, **kwargs):
         """

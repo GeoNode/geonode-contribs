@@ -18,7 +18,7 @@
 #
 #########################################################################
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.db.models import Q
 from mptt.models import MPTTModel, TreeForeignKey
@@ -208,7 +208,7 @@ class AnalysisType(RiskAppAware, HazardTypeAware, LocationAware, Exportable, mod
     app = models.ForeignKey(RiskApp)
     fa_icon = models.CharField(max_length=30, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.name)
 
     class Meta:
@@ -266,7 +266,7 @@ class HazardType(RiskAppAware, LocationAware, Exportable, models.Model):
     fa_class = models.CharField(max_length=64, default='fa-times')
     app = models.ForeignKey(RiskApp)
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.mnemonic)
 
     class Meta:
@@ -415,7 +415,7 @@ class RiskAnalysis(RiskAppAware, Schedulable, LocationAware, HazardTypeAware, An
     additional_layers = models.ManyToManyField(Layer, blank=True)
     app = models.ForeignKey(RiskApp)
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.name)
 
     class Meta:
@@ -539,7 +539,7 @@ class AdministrativeDivision(RiskAppAware, Exportable, MPTTModel):
         if self.parent:
             return self.parent.geom_href
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.name)
 
     class Meta:
@@ -584,7 +584,7 @@ class Region(models.Model):
         related_name='administrative_divisions'
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.name)
 
     class Meta:
@@ -648,7 +648,7 @@ class DymensionInfo(RiskAnalysisAware, Exportable, models.Model):
         through='RiskAnalysisDymensionInfoAssociation'
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.name)
 
     class Meta:
@@ -708,7 +708,7 @@ class RiskAnalysisAdministrativeDivisionAssociation(models.Model):
     riskanalysis = models.ForeignKey(RiskAnalysis)
     administrativedivision = models.ForeignKey(AdministrativeDivision)
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.riskanalysis.name + " - " +
                              self.administrativedivision.name)
 
@@ -745,7 +745,7 @@ class RiskAnalysisDymensionInfoAssociation(models.Model):
         null=True,
         unique=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.riskanalysis.name + " - " +
                              self.dymensioninfo.name)
 
@@ -825,7 +825,7 @@ class PointOfContact(Exportable, models.Model):
         blank=True
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.individual_name + " - " +
                              self.organization_name)
 
@@ -983,7 +983,7 @@ class HazardSet(Exportable, models.Model):
         null=False
     )
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.title)
 
     class Meta:
@@ -1031,7 +1031,7 @@ class FurtherResource(models.Model):
         unique=False,
         related_name='resource')
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.resource.title)
 
     class Meta:
@@ -1174,7 +1174,7 @@ class AnalysisTypeFurtherResourceAssociation(models.Model):
         null=False,
         unique=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.resource)
 
     class Meta:
@@ -1218,7 +1218,7 @@ class DymensionInfoFurtherResourceAssociation(models.Model):
         null=False,
         unique=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.resource)
 
     class Meta:
@@ -1257,7 +1257,7 @@ class HazardSetFurtherResourceAssociation(models.Model):
         unique=False,
         related_name='hazard_set')
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.resource)
 
     class Meta:
@@ -1277,7 +1277,7 @@ class RiskAnalysisCreate(models.Model):
 
     file_link.allow_tags = True
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.descriptor_file.name)
 
     class Meta:
@@ -1322,7 +1322,7 @@ class RiskAnalysisImportData(models.Model):
 
     file_link.allow_tags = True
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.data_file.name)
 
     class Meta:
@@ -1369,7 +1369,7 @@ class RiskAnalysisImportMetadata(models.Model):
 
     file_link.allow_tags = True
 
-    def __unicode__(self):
+    def __str__(self):
         return u"{0}".format(self.metadata_file.name)
 
     class Meta:
