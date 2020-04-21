@@ -111,7 +111,7 @@
     "ogc-schemas": "2.6.1",
     "openlayers": "4.0.1",
     "pdfviewer": "0.3.2",
-    "proj4": "2.3.14",
+    "proj4": "2.6.1",
     "qrcode.react": "0.6.1",
     "react": "15.4.2",
     "react-addons-shallow-compare": "15.4.2",
