@@ -57,6 +57,9 @@ class RiskApp(models.Model):
                 return a[1]
         return n
 
+    class Meta:
+        db_table = 'risks_riskapp'
+
 
 class RiskAppAware(object):
     def get_url(self, url_name, *args, **kwargs):
