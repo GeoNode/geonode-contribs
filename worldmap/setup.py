@@ -24,7 +24,7 @@ setup(
         'dicttoxml==1.7.4',
         'django-geoexplorer-worldmap==4.0.72',
         'flexidate==1.4',
-        'geopy==1.20.0',
+        'geopy==1.22.0',
         'vectorformats==0.1',
     ],
 )
