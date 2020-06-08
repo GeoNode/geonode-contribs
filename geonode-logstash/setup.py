@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='geonode_logstash',
-    version='0.1',
+    version='3.0',
     packages=find_packages(),
     include_package_data=True,
     license='GPL',
@@ -20,15 +20,14 @@ setup(
     author_email='dev@geonode.org',
     classifiers=[
         'Environment :: Web Environment',
-        'Framework :: Django',
-        'Framework :: Django :: 1.11.25',
+        'Framework :: Django :: 2.2.13',
         'Intended Audience :: Developers',
         'License :: GPL',
         'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7'
+        'Programming Language :: Python :: 3.7'
     ],
     install_requires=[
+        'Django>=2.0,<3.0',
         'python-logstash-async>=1.5.1,<2.0.0'
     ]
 )

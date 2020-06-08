@@ -91,7 +91,7 @@ def site_facets(context):
                     kws = HierarchicalKeyword.objects.filter(name__iexact=keyword)
                     for kw in kws:
                         treeqs = treeqs | HierarchicalKeyword.get_tree(kw)
-                except BaseException:
+                except Exception:
                     # Ignore keywords not actually used?
                     pass
 
@@ -148,7 +148,7 @@ def site_facets(context):
                     kws = HierarchicalKeyword.objects.filter(name__iexact=keyword)
                     for kw in kws:
                         treeqs = treeqs | HierarchicalKeyword.get_tree(kw)
-                except BaseException:
+                except Exception:
                     # Ignore keywords not actually used?
                     pass
 
@@ -233,7 +233,7 @@ def site_facets(context):
                     kws = HierarchicalKeyword.objects.filter(name__iexact=keyword)
                     for kw in kws:
                         treeqs = treeqs | HierarchicalKeyword.get_tree(kw)
-                except BaseException:
+                except Exception:
                     # Ignore keywords not actually used?
                     pass
 

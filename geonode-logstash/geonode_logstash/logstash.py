@@ -450,7 +450,7 @@ class LogstashDispatcher(object):
                                 alpha_3=name_value).alpha_3
                             center = self._get_country_center(country_iso_3)
                             item_value['center'] = center or ''
-                        except BaseException as e:
+                        except Exception as e:
                             log.error(str(e))
                     if is_list:
                         try:
@@ -660,7 +660,7 @@ class GeonodeLogstashFormatter(LogstashFormatter):
                     fout.write(data)
                     fout.flush()
                 gzip_j = sqlite3.Binary(_out.getvalue())
-            except BaseException as e:
+            except Exception as e:
                 log.error(str(e))
         return gzip_j
 
