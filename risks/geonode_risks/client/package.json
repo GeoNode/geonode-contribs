@@ -120,7 +120,7 @@
     "react-color": "2.11.3",
     "react-confirm-button": "0.0.2",
     "react-copy-to-clipboard": "4.1.0",
-    "react-dnd": "2.2.3",
+    "react-dnd": "2.6.0",
     "react-dnd-html5-backend": "2.2.3",
     "react-dock": "0.2.3",
     "react-dom": "15.4.2",
