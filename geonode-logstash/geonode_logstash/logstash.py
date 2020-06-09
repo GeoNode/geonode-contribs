@@ -17,6 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
+import six
 import json
 import gzip
 import pytz
@@ -49,10 +50,7 @@ from logstash_async.worker import LogProcessingWorker
 from logstash_async.formatter import LogstashFormatter
 from logstash_async.handler import AsynchronousLogstashHandler
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO, BytesIO
 
 from .models import (
     COUNTRIES_GEODB,
@@ -661,12 +659,15 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         gzip_j = None
         if data:
             try:
-                _out = StringIO()
-                with gzip.GzipFile(fileobj=_out, mode="w") as fout:
+                _out = BytesIO()
+                with gzip.GzipFile(fileobj=_out, mode="wb") as fout:
+                    if data and isinstance(data, six.string_types):
+                        data = data.encode('UTF-8')
                     fout.write(data)
                     fout.flush()
                 gzip_j = sqlite3.Binary(_out.getvalue())
             except Exception as e:
+                traceback.print_exc()
                 log.error(str(e))
         return gzip_j
 
