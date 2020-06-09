@@ -658,6 +658,7 @@ class GeonodeLogstashFormatter(LogstashFormatter):
         :param j: input json to be compressed
         :return: compressed object
         """
+        gzip_j = None
         if data:
             try:
                 _out = StringIO()
