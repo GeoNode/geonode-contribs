@@ -31,7 +31,7 @@
     "istanbul-instrumenter-loader": "2.0.0",
     "jsdoc": "3.4.3",
     "jsdoc-jsx": "0.1.0",
-    "karma": "1.5.0",
+    "karma": "5.0.9",
     "karma-chrome-launcher": "2.0.0",
     "karma-cli": "1.0.1",
     "karma-coverage": "1.1.1",
