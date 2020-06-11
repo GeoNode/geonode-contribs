@@ -80,7 +80,7 @@
     "ag-grid": "3.3.3",
     "ag-grid-react": "3.3.1",
     "axios": "0.11.1",
-    "babel-polyfill": "6.8.0",
+    "babel-polyfill": "6.26.0",
     "babel-standalone": "6.7.7",
     "bootstrap": "3.3.6",
     "canvas-to-blob": "0.0.0",
