@@ -66,7 +66,7 @@
     "redux-immutable-state-invariant": "1.2.3",
     "redux-mock-store": "1.2.2",
     "rimraf": "2.5.2",
-    "simple-git": "1.33.1",
+    "simple-git": "2.10.0",
     "style-loader": "0.12.4",
     "url-loader": "0.5.7",
     "webpack": "2.2.1",
