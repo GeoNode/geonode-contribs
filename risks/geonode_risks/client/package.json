@@ -18,7 +18,7 @@
     "copy-webpack-plugin": "4.0.1",
     "css-loader": "0.19.0",
     "docma": "1.5.1",
-    "download-cli": "1.0.1",
+    "download-cli": "1.1.1",
     "escope": "3.2.0",
     "eslint": "0.24.1",
     "eslint-plugin-react": "3.0.0",
