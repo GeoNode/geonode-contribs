@@ -17,3 +17,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
+
+from django.apps import AppConfig
+
+
+class LdapAppConfig(AppConfig):
+    name = 'geonode_ldap'
+    label = 'geonode_ldap'
+
+
+default_app_config = 'geonode_ldap.LdapAppConfig'
