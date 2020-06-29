@@ -29,7 +29,7 @@
     "glob": "7.1.1",
     "html-webpack-plugin": "2.17.0",
     "istanbul-instrumenter-loader": "2.0.0",
-    "jsdoc": "3.4.3",
+    "jsdoc": "3.6.4",
     "jsdoc-jsx": "0.1.0",
     "karma": "1.5.0",
     "karma-chrome-launcher": "2.0.0",
