@@ -85,7 +85,7 @@
     "bootstrap": "3.3.6",
     "canvas-to-blob": "0.0.0",
     "canvg-browser": "1.0.0",
-    "chroma-js": "^1.2.2",
+    "chroma-js": "^2.1.0",
     "classnames": "2.2.5",
     "codemirror": "5.18.2",
     "colorbrewer": "1.0.0",
