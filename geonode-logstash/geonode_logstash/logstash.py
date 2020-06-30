@@ -661,8 +661,10 @@ class GeonodeLogstashFormatter(LogstashFormatter):
             try:
                 _out = BytesIO()
                 with gzip.GzipFile(fileobj=_out, mode="wb") as fout:
-                    if data and isinstance(data, six.string_types):
+                    if isinstance(data, six.string_types):
                         data = data.encode('UTF-8')
+                    if isinstance(data, dict):
+                        data = json.dumps(data).encode('utf-8')
                     fout.write(data)
                     fout.flush()
                 gzip_j = sqlite3.Binary(_out.getvalue())
