@@ -87,7 +87,7 @@
     "canvg-browser": "1.0.0",
     "chroma-js": "^1.2.2",
     "classnames": "2.2.5",
-    "codemirror": "5.18.2",
+    "codemirror": "5.55.0",
     "colorbrewer": "1.0.0",
     "cookies-js": "^1.2.3",
     "es6-promise": "2.3.0",
