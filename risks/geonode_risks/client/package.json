@@ -5,7 +5,7 @@
   "repository": "https://github.com/kappu72",
   "main": "index.js",
   "devDependencies": {
-    "babel-core": "6.8.0",
+    "babel-core": "6.26.3",
     "babel-eslint": "4.1.8",
     "babel-istanbul-loader": "0.1.0",
     "babel-loader": "6.2.4",
