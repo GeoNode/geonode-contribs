@@ -68,7 +68,7 @@
     "rimraf": "2.5.2",
     "simple-git": "1.33.1",
     "style-loader": "0.12.4",
-    "url-loader": "0.5.7",
+    "url-loader": "0.6.2",
     "webpack": "2.2.1",
     "webpack-bundle-size-analyzer": "2.0.2",
     "webpack-dev-server": "2.4.1",
