@@ -165,7 +165,7 @@
     "turf-union": "3.0.10",
     "url": "0.10.3",
     "uuid": "3.0.1",
-    "w3c-schemas": "1.3.1",
+    "w3c-schemas": "1.4.0",
     "xml2js": "0.4.17"
   },
   "scripts": {
