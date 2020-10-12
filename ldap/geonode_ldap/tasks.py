@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #########################################################################
 #
-# Copyright (C) 2019 OSGeo
+# Copyright (C) 2020 OSGeo
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,12 +18,25 @@
 #
 #########################################################################
 
-from django.apps import AppConfig
+from geonode.celery_app import app
+from django.core.management import call_command
+import logging
+
+logger = logging.getLogger(__name__)
+
+@app.task(queue='default')
+def updateldapusers():
+    """
+    Run management command for updating ldap users with geonode
+    """
+    call_command('updateldapusers')
+    #logger.info('updateldapusers run')
 
 
-class LdapAppConfig(AppConfig):
-    name = 'geonode_ldap'
-    label = 'geonode_ldap'
-
-
-default_app_config = 'geonode_ldap.LdapAppConfig'
+@app.task(queue='default')
+def updateldapgroups():
+    """
+    Run management command for updating ldap groups with geonode
+    """
+    call_command('updateldapgroups')
+    #logger.info('updateldapgroups run')
