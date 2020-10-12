@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from geonode.layers.models import Layer, Attribute
 from geonode.maps.models import Map
 from geonode.people.models import Profile
+from geonode.utils import num_encode
 
 try:
     from django.utils import timezone
@@ -134,6 +135,39 @@ class Action(models.Model):
     description = models.CharField(max_length=255, db_index=True)
     args = models.CharField(max_length=255, db_index=True)
     timestamp = models.DateTimeField(default=now, db_index=True)
+
+
+class MapSnapshot(models.Model):
+
+    map = models.ForeignKey(
+        Map, related_name="snapshot_set", on_delete=models.CASCADE)
+    """
+    The ID of the map this snapshot was generated from.
+    """
+
+    config = models.TextField(_('JSON Configuration'))
+    """
+    Map configuration in JSON format
+    """
+
+    created_dttm = models.DateTimeField(auto_now_add=True)
+    """
+    The date/time the snapshot was created.
+    """
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             blank=True, null=True, on_delete=models.CASCADE)
+    """
+    The user who created the snapshot.
+    """
+
+    def json(self):
+        return {
+            "map": self.map.id,
+            "created": self.created_dttm.isoformat(),
+            "user": self.user.username if self.user else None,
+            "url": num_encode(self.id)
+        }
 
 
 # signals for adding actions

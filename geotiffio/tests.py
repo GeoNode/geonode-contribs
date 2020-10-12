@@ -64,9 +64,6 @@ from geonode.layers.utils import (
     file_upload,
 )
 from geonode.tests.utils import check_layer, get_web_page
-
-from geonode.geoserver.helpers import cascading_delete, set_attributes_from_geoserver
-from geonode.geoserver.signals import gs_catalog
 from geonode.utils import check_ogc_backend
 
 from contextlib import closing

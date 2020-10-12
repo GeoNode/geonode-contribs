@@ -4,6 +4,8 @@ import math
 import re
 import urlparse
 
+from six import string_types
+
 from guardian.shortcuts import get_perms
 
 from django.conf import settings
@@ -21,15 +23,16 @@ from geonode.documents.models import get_related_documents
 from geonode.geoserver.helpers import ogc_server_settings
 from geonode.layers.models import Layer
 from geonode.maps.models import Map, MapLayer, MapSnapshot
-from geonode.utils import forward_mercator, default_map_config
-from geonode.utils import llbbox_to_mercator
-from geonode.utils import bbox_to_projection
 from geonode.layers.views import _resolve_layer
 from geonode.maps.views import _resolve_map, _PERMISSION_MSG_VIEW, clean_config
 # from geonode.maps.views import snapshot_config
-from geonode.utils import DEFAULT_TITLE
-from geonode.utils import DEFAULT_ABSTRACT
-from geonode.utils import build_social_links
+from geonode.utils import (
+    DEFAULT_TITLE, DEFAULT_ABSTRACT,
+    forward_mercator, default_map_config,
+    llbbox_to_mercator, bbox_to_projection,
+    build_social_links, num_encode
+)
+
 from geonode.security.views import _perms_info_json
 
 from .models import LayerStats, ExtLayerAttribute
@@ -42,9 +45,30 @@ _PERMISSION_MSG_SAVE = _("You are not permitted to save or edit this map.")
 ows_sub = re.compile(r"[&\?]+SERVICE=WMS|[&\?]+REQUEST=GetCapabilities", re.IGNORECASE)
 
 
+def snapshot_create(request):
+    """
+    Create a permalinked map
+    """
+    conf = request.body
+
+    if isinstance(conf, string_types):
+        config = json.loads(conf)
+        snapshot = MapSnapshot.objects.create(
+            config=clean_config(conf),
+            map=Map.objects.get(
+                id=config['id']))
+        return HttpResponse(num_encode(snapshot.id), content_type="text/plain")
+    else:
+        return HttpResponse(
+            "Invalid JSON",
+            content_type="text/plain",
+            status=500)
+
+
 def ajax_snapshot_history(request, mapid):
     map_obj = Map.objects.get(pk=mapid)
-    history = [snapshot.json() for snapshot in map_obj.snapshots]
+    snapshots = MapSnapshot.objects.filter(map=map_obj)
+    history = [snapshot.json() for snapshot in snapshots]
     return HttpResponse(json.dumps(history), content_type="text/plain")
 
 
@@ -93,6 +117,87 @@ def ajax_layer_download_check(request, layername):
     return HttpResponse(
         str(can_download).lower()
     )
+
+
+def map_embed_widget(request, mapid,
+                     template='leaflet/maps/map_embed_widget.html'):
+    """Display code snippet for embedding widget.
+
+    :param request: The request from the frontend.
+    :type request: HttpRequest
+
+    :param mapid: The id of the map.
+    :type mapid: String
+
+    :return: formatted code.
+    """
+    map_obj = _resolve_map(request,
+                           mapid,
+                           'base.view_resourcebase',
+                           _PERMISSION_MSG_VIEW)
+    map_bbox = map_obj.bbox_string.split(',')
+
+    # Sanity Checks
+    for coord in map_bbox:
+        if not coord:
+            return
+
+    map_layers = MapLayer.objects.filter(
+        map_id=mapid).order_by('stack_order')
+    layers = []
+    for layer in map_layers:
+        if layer.group != 'background':
+            layers.append(layer)
+
+    if map_obj.srid != 'EPSG:3857':
+        map_bbox = [float(coord) for coord in map_bbox]
+    else:
+        map_bbox = llbbox_to_mercator([float(coord) for coord in map_bbox])
+
+    if map_bbox and len(map_bbox) >= 4:
+        minx, miny, maxx, maxy = [float(coord) for coord in map_bbox]
+        x = (minx + maxx) / 2
+        y = (miny + maxy) / 2
+
+        if getattr(settings, 'DEFAULT_MAP_CRS') == "EPSG:3857":
+            center = list((x, y))
+        else:
+            center = list(forward_mercator((x, y)))
+
+        if center[1] == float('-inf'):
+            center[1] = 0
+
+        BBOX_DIFFERENCE_THRESHOLD = 1e-5
+
+        # Check if the bbox is invalid
+        valid_x = (maxx - minx) ** 2 > BBOX_DIFFERENCE_THRESHOLD
+        valid_y = (maxy - miny) ** 2 > BBOX_DIFFERENCE_THRESHOLD
+
+        width_zoom = 15
+        if valid_x:
+            try:
+                width_zoom = math.log(360 / abs(maxx - minx), 2)
+            except Exception:
+                pass
+
+        height_zoom = 15
+        if valid_y:
+            try:
+                height_zoom = math.log(360 / abs(maxy - miny), 2)
+            except Exception:
+                pass
+
+        map_obj.center_x = center[0]
+        map_obj.center_y = center[1]
+        map_obj.zoom = math.ceil(min(width_zoom, height_zoom))
+
+    context = {
+        'resource': map_obj,
+        'map_bbox': map_bbox,
+        'map_layers': layers
+    }
+    message = render(request, template, context)
+    return HttpResponse(message)
 
 
 @login_required

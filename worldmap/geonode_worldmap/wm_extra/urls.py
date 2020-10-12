@@ -1,20 +1,23 @@
 from django.conf.urls import include, url
 from django.views.generic.base import RedirectView
 
-from geonode.maps.views import snapshot_create
-
-from .views import (ajax_snapshot_history, layer_searchable_fields,
-                    ajax_layer_update, ajax_layer_edit_check,
-                    ajax_layer_edit_style_check, ajax_layer_download_check, upload_layer,
-                    ajax_increment_layer_stats, add_layer_wm,
-                    new_map_wm, new_map_json_wm, map_view_wm, map_json_wm,
-                    map_detail_wm, map_view_wm_mobile, add_endpoint, printmap, )
+from .views import (
+    ajax_snapshot_history, layer_searchable_fields,
+    ajax_layer_update, ajax_layer_edit_check,
+    ajax_layer_edit_style_check, ajax_layer_download_check, upload_layer,
+    ajax_increment_layer_stats, add_layer_wm,
+    new_map_wm, new_map_json_wm, map_view_wm, map_json_wm,
+    map_detail_wm, map_view_wm_mobile, add_endpoint, printmap,
+    snapshot_create, map_embed_widget
+)
 
 from tastypie.api import Api
-from .api.resources import (LayerResource, TagResource, TopicCategoryResource,
-                            ActionAllResource, ActionLayerCreateResource,
-                            ActionLayerDeleteResource, ActionMapCreateResource,
-                            ActionMapDeleteResource)
+from .api.resources import (
+    LayerResource, TagResource, TopicCategoryResource,
+    ActionAllResource, ActionLayerCreateResource,
+    ActionLayerDeleteResource, ActionMapCreateResource,
+    ActionMapDeleteResource
+)
 
 # api
 wm_api = Api(api_name='2.8')
@@ -42,6 +45,7 @@ urlpatterns = [
     url(r'^maps/(?P<mapid>[^/]+)/edit$', map_view_wm, name='map_view_wm'),
     url(r'^maps/(?P<mapid>[^/]+)/mobile$', map_view_wm_mobile, name='map_view_wm_mobile'),
     url(r'^maps/add_endpoint?$', add_endpoint, name='add_endpoint'),
+    url(r'^maps/(?P<mapid>[^/]+)/embed_widget$', map_embed_widget, name='map_embed_widget'),
     url(r'^snapshot/create/?$', snapshot_create, name='snapshot_create'),
     url(r'^maps/(?P<mapid>[^/]+)/(?P<snapshot>[A-Za-z0-9_\-]+)/$', map_view_wm, name='map_view_wm'),
     # wm history
