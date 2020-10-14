@@ -179,7 +179,7 @@ class GeonodeLdapBackend(backend.LDAPBackend):
             ldap_user._user.keywords.add("ldap")
 
         # This has to wait until we're sure the user has a pk.
-        if self.settings.MIRROR_GROUPS or self.settings.MIRROR_GROUPS_EXCEPT:
+        if self.settings.MIRROR_GROUPS and self.settings.MIRROR_GROUPS_EXCEPT:
             ldap_user._normalize_mirror_settings()
             self._mirror_groups(ldap_user)
 
