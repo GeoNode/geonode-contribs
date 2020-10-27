@@ -17,14 +17,29 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
+from django.core.management import call_command
 
 from geonode.celery_app import app
-from django.core.management import call_command
+
 import logging
 
 logger = logging.getLogger(__name__)
 
-@app.task(queue='default')
+
+@app.task(
+    bind=True,
+    name='ldap.geonode_ldap.updateldapusers',
+    queue='default',
+    countdown=60,
+    expires=120,
+    acks_late=True,
+    retry=True,
+    retry_policy={
+        'max_retries': 10,
+        'interval_start': 0,
+        'interval_step': 0.2,
+        'interval_max': 0.2,
+    })
 def updateldapusers():
     """
     Run management command for updating ldap users with geonode
@@ -33,7 +48,20 @@ def updateldapusers():
     #logger.info('updateldapusers run')
 
 
-@app.task(queue='default')
+@app.task(
+    bind=True,
+    name='ldap.geonode_ldap.updateldapgroups',
+    queue='default',
+    countdown=60,
+    expires=120,
+    acks_late=True,
+    retry=True,
+    retry_policy={
+        'max_retries': 10,
+        'interval_start': 0,
+        'interval_step': 0.2,
+        'interval_max': 0.2,
+    })
 def updateldapgroups():
     """
     Run management command for updating ldap groups with geonode

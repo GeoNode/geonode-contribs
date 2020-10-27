@@ -21,10 +21,11 @@
 import StringIO
 import traceback
 
-from celery.task import task
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management import call_command
+
+from geonode.celery_app import app
 
 from .models import RiskAnalysis, HazardSet
 
@@ -32,7 +33,20 @@ def create_risk_analysis(input_file, file_ini):
     _create_risk_analysis.apply_async(args=(input_file, file_ini))
 
 
-@task(name='geonode_risks.tasks.create_risk_analysis')
+@app.task(
+    bind=True,
+    name='geonode_risks.tasks.create_risk_analysis',
+    queue='default',
+    countdown=60,
+    expires=120,
+    acks_late=True,
+    retry=True,
+    retry_policy={
+        'max_retries': 10,
+        'interval_start': 0,
+        'interval_step': 0.2,
+        'interval_max': 0.2,
+    })
 def _create_risk_analysis(input_file, file_ini):
     out = StringIO.StringIO()
     risk = None
@@ -56,7 +70,21 @@ def import_risk_data(input_file, risk_app, risk_analysis, region, final_name):
     risk_analysis.set_queued()
     _import_risk_data.apply_async(args=(input_file, risk_app.name, risk_analysis.name, region.name, final_name,))
 
-@task(name='geonode_risks.tasks.import_risk_data')
+
+@app.task(
+    bind=True,
+    name='geonode_risks.tasks.import_risk_data',
+    queue='default',
+    countdown=60,
+    expires=120,
+    acks_late=True,
+    retry=True,
+    retry_policy={
+        'max_retries': 10,
+        'interval_start': 0,
+        'interval_step': 0.2,
+        'interval_max': 0.2,
+    })
 def _import_risk_data(input_file, risk_app_name, risk_analysis_name, region_name, final_name):
         out = StringIO.StringIO()
         risk = None
@@ -87,7 +115,20 @@ def import_risk_metadata(input_file, risk_app, risk_analysis, region, final_name
     _import_risk_metadata.apply_async(args=(input_file, risk_app.name, risk_analysis.name, region.name, final_name,))
 
 
-@task(name='geonode_risks.tasks.import_risk_metadata')
+@app.task(
+    bind=True,
+    name='geonode_risks.tasks.import_risk_metadata',
+    queue='default',
+    countdown=60,
+    expires=120,
+    acks_late=True,
+    retry=True,
+    retry_policy={
+        'max_retries': 10,
+        'interval_start': 0,
+        'interval_step': 0.2,
+        'interval_max': 0.2,
+    })
 def _import_risk_metadata(input_file, risk_app_name, risk_analysis_name, region_name, final_name):
         out = StringIO.StringIO()
         risk = None
