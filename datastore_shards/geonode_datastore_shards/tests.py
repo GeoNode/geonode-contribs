@@ -82,7 +82,7 @@ class DatastoreShardsCoreTest(GeoNodeBaseTestSupport):
         super(DatastoreShardsCoreTest, self).setUp()
         # set temporary settings to use a postgis datastore
         settings.DATASTORE_URL = 'postgis://geonode:geonode@localhost:5432/datastore'
-        postgis_db = dj_database_url.parse(settings.DATASTORE_URL, conn_max_age=600)
+        postgis_db = dj_database_url.parse(settings.DATASTORE_URL, conn_max_age=0)
         settings.DATABASES['datastore'] = postgis_db
         settings.OGC_SERVER['default']['DATASTORE'] = 'datastore'
         settings.SHARD_STRATEGY = 'layercount'

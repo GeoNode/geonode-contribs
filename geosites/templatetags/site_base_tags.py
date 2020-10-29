@@ -80,6 +80,7 @@ def site_facets(context):
         documents = get_visible_resources(
             documents,
             request.user if request else None,
+            request=request,
             admin_approval_required=settings.ADMIN_MODERATE_UPLOADS,
             unpublished_not_visible=settings.RESOURCE_PUBLISHING,
             private_groups_not_visibile=settings.GROUP_PRIVATE_RESOURCES)
@@ -128,6 +129,7 @@ def site_facets(context):
         layers = get_visible_resources(
             layers,
             request.user if request else None,
+            request=request,
             admin_approval_required=settings.ADMIN_MODERATE_UPLOADS,
             unpublished_not_visible=settings.RESOURCE_PUBLISHING,
             private_groups_not_visibile=settings.GROUP_PRIVATE_RESOURCES)
@@ -206,12 +208,14 @@ def site_facets(context):
         maps = get_visible_resources(
             maps,
             request.user if request else None,
+            request=request,
             admin_approval_required=settings.ADMIN_MODERATE_UPLOADS,
             unpublished_not_visible=settings.RESOURCE_PUBLISHING,
             private_groups_not_visibile=settings.GROUP_PRIVATE_RESOURCES)
         documents = get_visible_resources(
             documents,
             request.user if request else None,
+            request=request,
             admin_approval_required=settings.ADMIN_MODERATE_UPLOADS,
             unpublished_not_visible=settings.RESOURCE_PUBLISHING,
             private_groups_not_visibile=settings.GROUP_PRIVATE_RESOURCES)
