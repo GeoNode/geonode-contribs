@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
     name='ldap.geonode_ldap.updateldapusers',
     queue='default',
     countdown=60,
-    expires=120,
+    # expires=120,
     acks_late=True,
     retry=True,
     retry_policy={
@@ -53,7 +53,7 @@ def updateldapusers():
     name='ldap.geonode_ldap.updateldapgroups',
     queue='default',
     countdown=60,
-    expires=120,
+    # expires=120,
     acks_late=True,
     retry=True,
     retry_policy={

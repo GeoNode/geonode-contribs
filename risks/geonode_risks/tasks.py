@@ -38,7 +38,7 @@ def create_risk_analysis(input_file, file_ini):
     name='geonode_risks.tasks.create_risk_analysis',
     queue='default',
     countdown=60,
-    expires=120,
+    # expires=120,
     acks_late=True,
     retry=True,
     retry_policy={
@@ -76,7 +76,7 @@ def import_risk_data(input_file, risk_app, risk_analysis, region, final_name):
     name='geonode_risks.tasks.import_risk_data',
     queue='default',
     countdown=60,
-    expires=120,
+    # expires=120,
     acks_late=True,
     retry=True,
     retry_policy={
@@ -120,7 +120,7 @@ def import_risk_metadata(input_file, risk_app, risk_analysis, region, final_name
     name='geonode_risks.tasks.import_risk_metadata',
     queue='default',
     countdown=60,
-    expires=120,
+    # expires=120,
     acks_late=True,
     retry=True,
     retry_policy={
