@@ -52,8 +52,8 @@ def get_ldap_groups_map(user=None):
     )
     result = {}
     for cn, attributes in remote_groups:
-        group_name = " ".join(
-            attributes[settings.LDAP_GROUP_NAME_ATTRIBUTE])
+        group_name = b" ".join(
+            attributes[settings.LDAP_GROUP_NAME_ATTRIBUTE]).decode("utf-8")
         sanitized_name = sanitize_group_name(group_name)
         result[slugify(sanitized_name)] = {
             "original": group_name,

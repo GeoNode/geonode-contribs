@@ -95,7 +95,8 @@ class Command(BaseCommand):
         result = []
         for cn, attributes in remote_groups:
             self.stdout.write("Processing group CN: {!r}...".format(cn))
-            group_name = " ".join(attributes[group_name_attribute])
+            group_name = b" ".join(
+                attributes[group_name_attribute]).decode("utf-8")
             # group_name = slugify(" ".join(attributes[group_name_attribute]))
             description = " ".join(attributes.get("description", group_name))
             truncated_name = group_name[:50]
