@@ -261,8 +261,11 @@ def replace_user_groups(user, group_profiles):
 
     remove_user_memberships(user)
     for group in group_profiles:
-        add_groups_to_user(
-            user, group_profile=group, group=group.group)
+        try:
+            add_groups_to_user(
+                user, group_profile=group, group=group.group)
+        except Exception:
+            pass
 
 
 def remove_user_memberships(user):
