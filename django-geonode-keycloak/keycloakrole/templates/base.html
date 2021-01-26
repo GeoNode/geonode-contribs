@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block head %}
+{% load keycloak_tags %}
+    <script src="{% get_base %}/auth/js/keycloak.js"></script>
+    <script>
+        let body = document.getElementsByTagName("body");
+        body.onload = initKeycloak();
+
+        function initKeycloak() {
+            var keycloak = new Keycloak({
+                url: '{% get_base %}/auth/',
+                realm: '{% get_realm %}',
+                clientId: '{% get_client %}'
+            });
+
+            keycloak.init({
+                onLoad: 'check-sso',
+                silentCheckSsoRedirectUri: window.location.origin + '/static/silent-check-sso.html'
+            }).then(function(authenticated) {
+                console.log('Authenticated: ' + keycloak.authenticated);
+                console.log('token: ' + keycloak.idToken);
+            }, 
+              (err) => {console.log(err)}
+            );
+        }
+    </script>
+    {{ block.super }}
+{% endblock %}
