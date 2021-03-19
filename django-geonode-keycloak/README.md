@@ -107,14 +107,14 @@ urlpatterns += (
 ## **Test**
 Create a virtual environment within your repository using the following commands:
 ```bash
-./manage.py test keycloakrole  
+python3 -m venv venv
+
+. ./venv/bin/activate/ 
 ```
 ### **Test with GeoNode**
 The following command runs the tests:
 ```bash
-python3 -m venv venv
-
-. ./venv/bin/activate/ 
+./manage.py test keycloakrole
 ```
 ### **Test as a stand alone Django application**
 Make sure requirements.txt has a compatible version of GDAL with your version of GeoNode (version 3.0.4 is being tested against).
