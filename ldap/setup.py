@@ -48,7 +48,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        "django-auth-ldap",
+        "django-auth-ldap==2.4.0",
         "geonode",
         "python-ldap",
     ],
