@@ -31,11 +31,6 @@ When creating your public client:
 5. Add the following web origin: *
 ### **Inside your web-app**
 The following files required to be modified before configuration of geonode:
-### **> requirements.txt**
-Add the following installment to the file
-```bash
-git+ssh://git@gitlab.catalyst.net.nz/giscore/django-geonode-keycloak.git@master
-```
 
 #### **> settings.py**
 Add the app to INSTALLED_APPS above 'geonode'
