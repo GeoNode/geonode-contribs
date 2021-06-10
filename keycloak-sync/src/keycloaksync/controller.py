@@ -8,6 +8,7 @@ if __name__ == '__main__':
     execute_from_command_line(['manage.py', 'migrate'])
 
 import json, logging
+import requests
 
 from django.db.models import Q
 from django.conf import settings
@@ -19,13 +20,69 @@ from django.contrib.auth.models import Group
 from geonode.people.models import Profile
 from allauth.socialaccount.models import SocialAccount
 
-import keycloak_util
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%d-%b-%y %H:%M:%S') 
 logger = logging.getLogger(__name__)
 
+
+def get_token():
+    url = f'{settings.KEYCLOAK_URL}/realms/master/protocol/openid-connect/token'
+    if settings.KEYCLOAK_USER:
+        rqdata = {
+            'username': settings.KEYCLOAK_USER,
+            'password': settings.KEYCLOAK_PASSWORD,
+            'grant_type': 'password',
+            'client_id': 'admin-cli'
+        }
+    else:
+        rqdata = {
+            'client_id': settings.KEYCLOAK_CLIENT,
+            'client_secret': settings.KEYCLOAK_CLIENT_SECRET,
+            'grant_type': settings.KEYCLOAK_GRANT_TYPE,
+            'scope': settings.KEYCLOAK_SCOPE,
+        }
+    resp = requests.post(url=url, data=rqdata)
+    data = resp.json()
+    access_token = data.get('access_token', None)
+    if not access_token:
+        r = f'{resp.status_code}: {resp.text} for data {rqdata}'
+        raise Exception(f'Access token not found in response: {r}')
+    return access_token
+
+def get_json(url):
+    token = get_token()
+    headers = {
+        'Authorization': f'Bearer {token}',
+    }
+    resp = requests.get(url=url, headers=headers)
+    return resp.json()
+
+def get_users(max=5000):
+    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/users?max={max}'
+    users = get_json(url)
+    return users
+
+def flatten_groups(groups):
+    flattened = []
+    for g in groups:
+        sg = g['subGroups']
+        g.pop('subGroups')
+        flattened.append(g)
+        if len(sg):
+            flattened += flatten_groups(sg)
+    return flattened
+
+def get_groups():
+    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/groups?max=5000'
+    groups = get_json(url)
+    return groups
+
+def get_roles():
+    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/clients/{settings.KEYCLOAK_CLIENT}/roles'
+    roles = get_json(url)
+    return roles
+
 def sync_users():
-    kc_users = keycloak_util.get_users()
+    kc_users = get_users()
     kc_accounts = [kcu for kcu in kc_users if kcu['enabled']]
     social_account_ids = [kcu['id'] for kcu in kc_accounts]
     
@@ -36,6 +93,7 @@ def sync_users():
     updated_profiles = []
     new_profiles = []
     new_social_accounts = []
+    updated_social_accounts = []
     for kcu in kc_accounts:
         uid = kcu['id']
         username = kcu['username']
@@ -61,30 +119,46 @@ def sync_users():
             )
             new_profiles.append(profile)
     
-    delete_social_accounts = SocialAccount.objects.filter(provider='keycloak').filter(~Q(uid__in=social_account_ids))
+    delete_social_accounts = SocialAccounts.filter(~Q(uid__in=social_account_ids))
     deleted_social_accounts = list(delete_social_accounts)
     delete_profiles = Profile.objects.filter(username__in=[sa.user.username for sa in delete_social_accounts])
     deleted_profiles = list(delete_profiles)
   
     logging.info(f'Keycloak User Profile Bulk Create initiated')
     Profile.objects.bulk_create(new_profiles)
-    new_profiles = Profile.objects.filter(username__in=[p.uid for p in new_profiles])
+    new_profiles = Profile.objects.filter(username__in=[p.username for p in new_profiles])
 
     for kcu in kc_accounts:
         uid = kcu['id']
         username = kcu['username']
+        extra_data = {
+            "email_verified": kcu.get('emailVerified', False),
+            "name": kcu.get('firstName', ''),
+            "groups": kcu.get('groups', []),
+            "preferred_username": kcu.get('username', ''),
+            "given_name": f"{kcu.get('firstName', '')} {kcu.get('lastName', '')}",
+            "email": kcu.get('email', ''),
+            "id": kcu.get('id', '')
+        }
         if uid not in existing_social_account_ids:
             profile = Profile.objects.filter(username=username).first()
             social_account = SocialAccount(
                 uid=uid,
                 provider='keycloak',
-                user=profile
+                user=profile,
+                extra_data=extra_data
             )
             new_social_accounts.append(social_account)
+        else:
+            social_account = existing_social_accounts.filter(uid=uid).first()
+            social_account.extra_data = extra_data
+            updated_social_accounts.append(social_account)
 
     logging.info(f'Keycloak User SocialAccount Bulk Create initiated')
     SocialAccount.objects.bulk_create(new_social_accounts)
     new_social_accounts = SocialAccount.objects.filter(uid__in=[sa.uid for sa in new_social_accounts])
+    logging.info(f'Keycloak User SocialAccount Bulk Update initiated')
+    SocialAccount.objects.bulk_update(updated_social_accounts, ['extra_data'])
 
     logging.info(f'Keycloak User Profile Bulk Update initiated')
     Profile.objects.bulk_update(updated_profiles, ['email', 'first_name', 'last_name'])
@@ -104,6 +178,7 @@ def sync_users():
         },
         "social_accounts": {
             "new": new_social_accounts,
+            "updated": updated_social_accounts,
             "deleted": deleted_social_accounts
         }
     }
@@ -117,8 +192,8 @@ def group_identifier(group):
 # updates those that are
 # and deletes those that are not in KeyCloak anymore
 def sync_groups():
-    kc_groups = keycloak_util.get_groups()
-    kc_groups = keycloak_util.flatten_groups(kc_groups)
+    kc_groups = get_groups()
+    kc_groups = flatten_groups(kc_groups)
 
     kc_roles = []
 
