@@ -30,4 +30,4 @@ def synchronize_roles(request):
         except KeycloakRole.DoesNotExist:
             KeycloakRole.objects.create(keycloak_id=role["id"], name=role["name"], group=group)
 
-    return redirect('admin:keycloak-role_keycloakrole_changelist')
+    return redirect('admin:keycloakrole_keycloakrole_changelist')
