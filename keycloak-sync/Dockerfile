@@ -4,4 +4,4 @@ WORKDIR /opt/
 COPY src /opt/
 
 ENTRYPOINT []
-RUN ["python", "keycloaksync/controller.py"]
+CMD ["python", "keycloaksync/controller.py"]
