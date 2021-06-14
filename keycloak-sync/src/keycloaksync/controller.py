@@ -156,7 +156,10 @@ def sync_users(group_descriptions = []):
             group_names = [kc['group'] for kc in kc_group_members if kc['user'] == kcu['id']]
             groups = Group.objects.filter(name__in=group_names)
             profile = Profile.objects.filter(username=kcu['username']).first()
-            profile.groups.set(groups)
+            if profile:
+                profile.groups.set(groups)
+            else:
+                logger.warning(f'Group Allocation: Profile does not exists for ID: {kcu['id']}')
 
     for kcu in kc_accounts:
         uid = kcu['id']
