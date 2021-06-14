@@ -4,8 +4,13 @@
 keycloak-sync is a geonode app to synchronise users, groups and roles between Keycloak and GeoNode.
 
 ## Quick start
-
-1. Add the following to your `settings.py` file:
+1. Docker
+  ```
+  RUN cd /usr/src; git clone https://github.com/GeoNode/geonode-contribs.git -b master
+  # Install logstash and centralized dashboard dependencies
+  RUN cd /usr/src/geonode-contribs/keycloaksync/src; pip install --upgrade  -e .
+  ```
+2. Add the following to your `settings.py` file:
     ```
     if 'keycloaksync' not in INSTALLED_APPS:
         INSTALLED_APPS += ('keycloaksync',)
