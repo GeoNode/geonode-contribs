@@ -57,9 +57,29 @@ def get_json(url):
     return resp.json()
 
 def get_users(max=5000):
-    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/users?max={max}'
+    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/users?max={max}&briefRepresentation=false'
     users = get_json(url)
     return users
+
+def get_user(id):
+    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/users/{id}'
+    user = get_json(url)
+    return user
+
+def get_groups(max=5000):
+    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/groups?max={max}&briefRepresentation=false'
+    groups = get_json(url)
+    return groups
+
+def get_group_members(group_id, max=5000):
+    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/groups/{group_id}/members?max={max}&briefRepresentation=false'
+    groups = get_json(url)
+    return groups
+
+def get_roles():
+    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/clients/{settings.KEYCLOAK_CLIENT}/roles'
+    roles = get_json(url)
+    return roles
 
 def flatten_groups(groups):
     flattened = []
@@ -71,17 +91,18 @@ def flatten_groups(groups):
             flattened += flatten_groups(sg)
     return flattened
 
-def get_groups():
-    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/groups?max=5000'
-    groups = get_json(url)
-    return groups
+def group_identifier(group):
+    return f"keycloak_{group['id']}_{group['name']}"
 
-def get_roles():
-    url = f'{settings.KEYCLOAK_URL}/admin/realms/{settings.KEYCLOAK_REALM}/clients/{settings.KEYCLOAK_CLIENT}/roles'
-    roles = get_json(url)
-    return roles
+def group_identifier_split(identifier):
+    return identifier.split('_')[1]
 
-def sync_users():
+def sync_users(group_descriptions = []):
+    kc_group_members = []
+    for group_description in group_descriptions:
+        group_members = get_group_members(group_identifier_split(group_description))
+        kc_group_members += [{'group': group_description, 'user': gm['id']} for gm in group_members]
+    
     kc_users = get_users()
     kc_accounts = [kcu for kcu in kc_users if kcu['enabled']]
     social_account_ids = [kcu['id'] for kcu in kc_accounts]
@@ -100,9 +121,6 @@ def sync_users():
         email = kcu.get('email', '')
         firstName = kcu.get('firstName', '')
         lastName = kcu.get('lastName', '')
-        groups = kcu.get('groups', [])
-        if len(groups):
-            logger.info(groups)
 
         profile = Profile.objects.filter(username=username).first()
         if profile:
@@ -124,9 +142,20 @@ def sync_users():
     delete_profiles = Profile.objects.filter(username__in=[sa.user.username for sa in delete_social_accounts])
     deleted_profiles = list(delete_profiles)
   
+    logging.info(f'Keycloak User Profile Bulk Delete initiated')
+    delete_profiles.delete()
+
     logging.info(f'Keycloak User Profile Bulk Create initiated')
     Profile.objects.bulk_create(new_profiles)
     new_profiles = Profile.objects.filter(username__in=[p.username for p in new_profiles])
+    
+    logging.info(f'Keycloak User Profile Group Assign initiated')
+    for kcu in kc_accounts:
+        if len(group_descriptions):
+            group_names = [kc['group'] for kc in kc_group_members if kc['user'] == kcu['id']]
+            groups = Group.objects.filter(name__in=group_names)
+            profile = Profile.objects.filter(username=kcu['username']).first()
+            profile.groups.set(groups)
 
     for kcu in kc_accounts:
         uid = kcu['id']
@@ -154,6 +183,9 @@ def sync_users():
             social_account.extra_data = extra_data
             updated_social_accounts.append(social_account)
 
+    logging.info(f'Keycloak User SocialAccount Bulk Delete initiated')
+    delete_social_accounts.delete()
+
     logging.info(f'Keycloak User SocialAccount Bulk Create initiated')
     SocialAccount.objects.bulk_create(new_social_accounts)
     new_social_accounts = SocialAccount.objects.filter(uid__in=[sa.uid for sa in new_social_accounts])
@@ -162,11 +194,6 @@ def sync_users():
 
     logging.info(f'Keycloak User Profile Bulk Update initiated')
     Profile.objects.bulk_update(updated_profiles, ['email', 'first_name', 'last_name'])
-
-    logging.info(f'Keycloak User SocialAccount Bulk Delete initiated')
-    delete_social_accounts.delete()
-    logging.info(f'Keycloak User Profile Bulk Delete initiated')
-    delete_profiles.delete()
 
     logging.info(f'Keycloak User sync summary: {len(new_profiles)} New, {len(existing_social_account_ids)} Updated, {len(deleted_social_accounts)} Deleted, {len(SocialAccount.objects.filter(provider="keycloak"))} Total')
 
@@ -183,9 +210,6 @@ def sync_users():
         }
     }
 
-def group_identifier(group):
-    return f"keycloak_{group['id']}_{group['name']}"
-
 # sync_groups fetches groups from KeyCloak,
 # flattens their tree structure,
 # and creates groups that are not in the database,
@@ -194,7 +218,6 @@ def group_identifier(group):
 def sync_groups():
     kc_groups = get_groups()
     kc_groups = flatten_groups(kc_groups)
-
     kc_roles = []
 
     group_ids = [group_identifier(kcu) for kcu in kc_groups]
@@ -220,6 +243,10 @@ def sync_groups():
     
     delete_group_profiles = GroupProfiles.filter(~Q(description__in=group_ids))
     delete_groups = Groups.filter(~Q(name__in=group_ids))
+
+    logging.info(f'Keycloak Group Bulk Delete initiated')
+    deleted_groups = list(delete_groups)
+    delete_groups.delete()
   
     logging.info(f'Keycloak Group Bulk Create initiated')
     Group.objects.bulk_create(new_groups)
@@ -238,19 +265,16 @@ def sync_groups():
             )
             new_group_profiles.append(social_account)
 
+    logging.info(f'Keycloak GroupProfile Bulk Delete initiated')
+    deleted_group_profiles = list(delete_group_profiles)
+    delete_group_profiles.delete()
+
     logging.info(f'Keycloak GroupProfile Bulk Create initiated')
     GroupProfile.objects.bulk_create(new_group_profiles)
     new_group_profiles = GroupProfile.objects.filter(description__in=[gp.description for gp in new_group_profiles])
 
     # logging.info(f'Keycloak User Group Bulk Update initiated')
     # Group.objects.bulk_update(updated_groups, ['name'])
-
-    logging.info(f'Keycloak GroupProfile Bulk Delete initiated')
-    deleted_group_profiles = list(delete_group_profiles)
-    delete_group_profiles.delete()
-    logging.info(f'Keycloak Group Bulk Delete initiated')
-    deleted_groups = list(delete_groups)
-    delete_groups.delete()
 
     logging.info(f'Keycloak Group sync summary: {len(new_group_profiles)} New, {len(existing_group_profiles)} Updated, {len(deleted_group_profiles)} Deleted, {len(GroupProfile.objects.filter(description__startswith="keycloak_"))} Total')
     return {
@@ -267,9 +291,14 @@ def sync_groups():
 
 def sync_all():
     group_summary = sync_groups()
-    user_summary = sync_users()
+    group_descriptions = []
+    for crud_key in group_summary['group_profiles']:
+        group_descriptions += [gs.description for gs in group_summary['group_profiles'][crud_key] ]
+    user_summary = sync_users(group_descriptions)
 
     full_summary = {**group_summary, **user_summary}
+
+    
     return full_summary
 
 def summary_to_json(summary):

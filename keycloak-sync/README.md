@@ -130,7 +130,13 @@ The `/keycloaksync/synchronize_all` url will return information in the following
 - Make sure you've got an `test.env` file with the contents of `test.env.example`
 - Start up the services
     ```
-    docker-compose -f test.yml up
+    COMPOSE_HTTP_TIMEOUT=240 docker-compose -f test.yml up --build
     ```
-- By default GeoNode will be running on http://localhost:9999/
+- Wait for the following log from the `django_1` log that indicates all has loaded:
+  ```
+  [uWSGI] getting INI configuration from /usr/src/my_geonode/uwsgi.ini
+  ```
+- You can thus test with http://localhost:9999/keycloaksync/synchronize_all
+  - Username: admin
+  - Password: admin
 - Use the same validation logic as provided in Quick Start's point 4
