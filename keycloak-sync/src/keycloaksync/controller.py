@@ -159,7 +159,7 @@ def sync_users(group_descriptions = []):
             if profile:
                 profile.groups.set(groups)
             else:
-                logger.warning(f'Group Allocation: Profile does not exists for ID: {kcu['id']}')
+                logger.warning(f'Group Allocation: Profile does not exists for ID: {kcu["id"]}')
 
     for kcu in kc_accounts:
         uid = kcu['id']
