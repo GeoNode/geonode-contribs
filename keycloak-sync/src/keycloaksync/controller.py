@@ -81,14 +81,15 @@ def get_roles():
     roles = get_json(url)
     return roles
 
-def flatten_groups(groups):
+def flatten_groups(groups, parent_id=None):
     flattened = []
     for g in groups:
         sg = g['subGroups']
+        g['parentGroup'] = parent_id
         g.pop('subGroups')
         flattened.append(g)
         if len(sg):
-            flattened += flatten_groups(sg)
+            flattened += flatten_groups(sg, g['id'])
     return flattened
 
 def group_identifier(group):
