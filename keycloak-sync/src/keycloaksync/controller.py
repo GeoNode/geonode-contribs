@@ -219,7 +219,6 @@ def sync_users(group_descriptions = []):
 def sync_groups():
     kc_groups = get_groups()
     kc_groups = flatten_groups(kc_groups)
-    kc_roles = []
 
     group_ids = [group_identifier(kcu) for kcu in kc_groups]
 
@@ -229,7 +228,7 @@ def sync_groups():
     existing_group_profiles = GroupProfiles.filter(description__in=group_ids)
     existing_group_profile_ids = [sa.description for sa in existing_group_profiles]
 
-    updated_groups = []
+    # updated_groups = []
     new_groups = []
     new_group_profiles = []
 
