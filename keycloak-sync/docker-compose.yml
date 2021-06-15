@@ -1,0 +1,7 @@
+version: '2.4'
+services:
+  sync:
+    build: .
+    env_file: .env
+    volumes:
+      - ./src:/opt/

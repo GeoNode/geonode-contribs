@@ -1,0 +1,114 @@
+version: '2.2'
+services:
+
+  db:
+    image: geonode/postgis:13
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - dbbackups:/pg_backups
+    env_file:
+      - test.env
+  rabbitmq:
+    image: rabbitmq
+  geoserver:
+    image: registry.gitlab.com/wernerraath/my_geonode/geoserver:latest
+    depends_on:
+      - db
+      - data-dir-conf
+    volumes:
+      - statics:/mnt/volumes/statics
+      - geoserver-data-dir:/geoserver_data/data
+      - backup-restore:/backup_restore
+      - data:/data
+      - tmp:/tmp
+    env_file:
+      - test.env
+  django:
+    build:
+      context: .
+      dockerfile: test.dockerfile
+    depends_on:
+      - db
+      - rabbitmq
+      - data-dir-conf
+    volumes:
+      - statics:/mnt/volumes/statics
+      - geoserver-data-dir:/geoserver_data/data
+      - backup-restore:/backup_restore
+      - data:/data
+      - tmp:/tmp
+    env_file:
+      - test.env
+    environment:
+      IS_CELERY: 'False'
+    entrypoint: ["/usr/src/my_geonode/entrypoint.sh"]
+    command: "uwsgi --ini /usr/src/my_geonode/uwsgi.ini"
+
+  celery:
+    build:
+      context: .
+      dockerfile: test.dockerfile
+    depends_on:
+      - db
+      - rabbitmq
+      - data-dir-conf
+    volumes:
+      - statics:/mnt/volumes/statics
+      - geoserver-data-dir:/geoserver_data/data
+      - backup-restore:/backup_restore
+      - data:/data
+      - tmp:/tmp
+    env_file:
+      - test.env
+    environment:
+      - IS_CELERY=True
+    entrypoint: ["/usr/src/my_geonode/entrypoint.sh"]
+    command: "celery-cmd"
+
+  geonode:
+    image: registry.gitlab.com/wernerraath/my_geonode/nginx:latest
+    depends_on:
+      - django
+      - geoserver
+    ports:
+      - "9999:80"
+    volumes:
+      - nginx-confd:/etc/nginx
+      - nginx-certificates:/geonode-certificates
+      - statics:/mnt/volumes/statics
+    env_file:
+      - test.env
+
+  # Gets and installs letsencrypt certificates
+  letsencrypt:
+    image: registry.gitlab.com/wernerraath/my_geonode/letsencrypt:latest
+    volumes:
+      - nginx-certificates:/geonode-certificates/
+    env_file:
+      - test.env
+
+  data-dir-conf:
+    image: geonode/geoserver_data:2.18.2
+    command: /bin/true
+    volumes:
+      - geoserver-data-dir:/geoserver_data/data
+
+volumes:
+  statics:
+    name: my_geonode-statics
+  nginx-confd:
+    name: my_geonode-nginxconfd
+  nginx-certificates:
+    name: my_geonode-nginxcerts
+  geoserver-data-dir:
+    name: my_geonode-gsdatadir
+  dbdata:
+    name: my_geonode-dbdata
+  dbbackups:
+    name: my_geonode-dbbackups
+  backup-restore:
+    name: my_geonode-backup-restore
+  data:
+    name: my_geonode-data
+  tmp:
+    name: my_geonode-tmp
