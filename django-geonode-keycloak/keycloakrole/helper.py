@@ -9,7 +9,7 @@ BASE_URL = settings.KEYCLOAK_HOST_URL
 # It then creates a post request.
 # Returns the access token.
 def get_token():
-    url = f'{BASE_URL}/auth/realms/master/protocol/openid-connect/token'
+    url = f'{BASE_URL}/auth/realms/{settings.KEYCLOAK_REALM}/protocol/openid-connect/token'
     data = {
         'client_id': settings.KEYCLOAK_CLIENT,
         'client_secret': settings.KEYCLOAK_CLIENT_SECRET,
