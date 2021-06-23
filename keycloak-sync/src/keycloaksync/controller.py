@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_token():
-    url = f'{settings.KEYCLOAK_URL}/realms/master/protocol/openid-connect/token'
+    url = f'{settings.KEYCLOAK_URL}/realms/{settings.KEYCLOAK_REALM}/protocol/openid-connect/token'
     if settings.KEYCLOAK_USER:
         rqdata = {
             'username': settings.KEYCLOAK_USER,
