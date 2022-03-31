@@ -1,4 +1,21 @@
-import json
+#########################################################################
+#
+# Copyright (C) 2022 OSGeo
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+#########################################################################
 import logging
 import requests
 import re
@@ -18,7 +35,8 @@ from geonode.services.serviceprocessors.base import (
     ServiceHandlerBase,
     get_geoserver_cascading_workspace,
 )
-
+from sos4py.main import connection_sos
+from urllib.parse import parse_qs, urlparse, urlencode
 from geonode_sos.models import FeatureOfInterest, Offerings
 from geonode_sos.parser import DescribeSensorParser
 
@@ -34,22 +52,21 @@ class SosServiceHandler(ServiceHandlerBase):
         self.proxy_base = None
         self.url = url
         self.indexing_method = INDEXED
-        self.json_response = None
+        self.content_response = None
         self.name = slugify(self.url)[:255]
         self.workspace = get_geoserver_cascading_workspace(create=False)
 
     @property
     def parsed_service(self):
-        if self.json_response is None:
-            payload = json.dumps({"request": "GetCapabilities", "service": "SOS"})
-            headers = {"Content-Type": "application/json"}
-            self.json_response = requests.request(
-                "POST", self.url, headers=headers, data=payload
-            ).json()
-        return self.json_response
+        _url = self.url
+        parsed_url = urlparse(_url)
+        captured_value = parse_qs(parsed_url.query)
+        if not captured_value:
+            _url += '?' + urlencode({"service": "SOS", "request": "GetCapabilities"})
+        return connection_sos(_url)
 
     def has_resources(self) -> bool:
-        return len(self.parsed_service.get("contents", [])) > 0
+        return len(self.parsed_service.contents) > 0
 
     def get_keywords(self):
         return []
@@ -59,16 +76,7 @@ class SosServiceHandler(ServiceHandlerBase):
         procedure = [
             proc
             for proc in self._get_procedure_list()
-            if resource_id in self._generate_id(proc)
-        ]
-        return procedure[0] if procedure else None
-
-    def get_detailed_procedure(self, procedure_id):
-        """Return a single resource's representation."""
-        procedure = [
-            proc
-            for proc in self.parsed_service.get("contents", [])
-            if procedure_id == proc.get("procedure")[0]
+            if resource_id in proc
         ]
         return procedure[0] if procedure else None
 
@@ -86,7 +94,11 @@ class SosServiceHandler(ServiceHandlerBase):
         """
         from geonode.services.models import Service
 
-        _response = self.parsed_service.get("serviceIdentification", {})
+        _response = self.parsed_service.sosServiceIdentification()
+
+        if '2.0.0' not in _response.versions:
+            raise Exception("SOS parsing is valid only for 2.0.0")
+
         instance = Service(
             uuid=str(uuid4()),
             base_url=self.url,
@@ -95,11 +107,10 @@ class SosServiceHandler(ServiceHandlerBase):
             owner=owner,
             parent=parent,
             metadata_only=True,
-            version=self.parsed_service.get("version", "2.0.0"),
+            version="2.0.0",
             name=self.name,
-            title=_response.get("title").get("eng"),
-            abstract=_response.get("abstract", {}).get("eng", None)
-            or _("Not provided"),
+            title=_response.title,
+            abstract=_response.abstract or _("Not provided"),
             online_resource=self.url,
         )
         return instance
@@ -176,16 +187,15 @@ class SosServiceHandler(ServiceHandlerBase):
         return geonode_layer
 
     def _from_resource_to_layer(self, _resource):
-        srs = f"EPSG:{_resource.srs}"
         payload = {
-            "name": self._generate_id(_resource.id),
+            "name": _resource.id,
             "store": slugify(self.url)[:255],
             "storeType": "remoteStore",
             "workspace": "remoteWorkspace",
             "alternate": f"{self.workspace.name}:{self._generate_id(_resource.id)}",
             "title": _resource.title,
             "abstract": _resource.abstract,
-            "srid": srs,
+            "srid": _resource.srs,
             "keywords": [_resource.title],
             "ows_url": _resource.id,
         }
@@ -216,17 +226,17 @@ class SosServiceHandler(ServiceHandlerBase):
 
     def _create_obj(self, _id: str, name: str, descr: str) -> NamedTuple:
         SOSLayer = namedtuple("SosLayer", ["id", "title", "abstract"])
-        return SOSLayer(self._generate_id(_id), name, descr)
+        return SOSLayer(_id, name, descr)
 
     def _generate_id(self, _id: str) -> str:
         return slugify(_id)
 
     def _get_procedure_list(self):
-        return [
-            item.get("procedure")[0]
-            for item in self.parsed_service.get("contents", [])
-            if item.get("procedure", [])
-        ]
+        return (
+            self.parsed_service.getOperationByName("DescribeSensor")
+            .parameters.get("procedure", {})
+            .get("values", [])
+        )
 
     def _get_procedure_detail(self, single_procedure):
         SOSProcedureDetail = namedtuple(
@@ -243,44 +253,24 @@ class SosServiceHandler(ServiceHandlerBase):
             ],
         )
 
-        headers = {"Content-type": "application/json", "Accept": "application/json"}
+        query_params = {
+            "service": "SOS",
+            "version": "2.0.0",
+            "request": "DescribeSensor",
+            "procedure": f"{single_procedure}",
+            "procedureDescriptionFormat": "http://www.opengis.net/sensorml/2.0"
+        }
 
-        payload = json.dumps(
-            {
-                "request": "DescribeSensor",
-                "service": "SOS",
-                "version": "2.0.0",
-                "procedure": f"{single_procedure}",
-                "procedureDescriptionFormat": "http://www.opengis.net/sensorml/2.0",
-            }
-        )
+        parsed_url = urlparse(self.url)
+        clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+        clean_url += '?' + urlencode(query_params)
 
-        _response = requests.request(
-            "POST", self.url, headers=headers, data=payload
-        ).json()
-        _xml = _response.get("procedureDescription").get("description")
+        _xml = requests.get(clean_url).content
+
         # getting the metadata needed
         parser = DescribeSensorParser(
             _xml, sos_service=self.url, procedure_id=single_procedure
         )
-        _bbox = None
-        srs = "4326"
-        bbox = self.get_detailed_procedure(single_procedure).get("observedArea")
-        if bbox:
-            _bbox = [
-                bbox["lowerLeft"][1],
-                bbox["lowerLeft"][0],
-                bbox["upperRight"][1],
-                bbox["upperRight"][0],
-            ]
-            srs = (
-                self.get_detailed_procedure(single_procedure)
-                .get("observedArea")
-                .get("crs")
-                .get("properties")
-                .get("href")
-                .split("/")[-1]
-            )
 
         return SOSProcedureDetail(
             id=parser.get_id(),
@@ -288,8 +278,8 @@ class SosServiceHandler(ServiceHandlerBase):
             abstract=parser.get_long_name(),
             offerings=parser.get_offerings(),
             feature_of_interest=parser.get_feature_of_interest(),
-            bbox=_bbox,
-            srs=srs,
+            bbox=parser.get_bbox(),
+            srs=parser.get_srs(),
             extra=parser.get_extra_metadata(),
         )
 
@@ -314,5 +304,5 @@ class SosServiceHandler(ServiceHandlerBase):
 
 class HandlerDescriptor:
     services_type = {
-        "SOS": {"OWS": True, "handler": SosServiceHandler, "label": _("SOS Services")}
+        "SOS": {"OWS": True, "handler": SosServiceHandler, "label": _("SOS 2.0 Services")}
     }
