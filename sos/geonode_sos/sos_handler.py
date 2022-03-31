@@ -37,8 +37,8 @@ from geonode.services.serviceprocessors.base import (
 )
 from sos4py.main import connection_sos
 from urllib.parse import parse_qs, urlparse, urlencode
-from geonode_sos.models import FeatureOfInterest, Offerings
-from geonode_sos.parser import DescribeSensorParser
+from geonode_sos.models import FeatureOfInterest, Offerings, ServiceProvider, SensorResponsible
+from geonode_sos.parser import DescribeSensorParser, namespaces
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,31 @@ class SosServiceHandler(ServiceHandlerBase):
             abstract=_response.abstract or _("Not provided"),
             online_resource=self.url,
         )
+        instance.save()
+        self._service_provider(instance)
+
         return instance
+
+    def _service_provider(self, instance):
+        _provider = self.parsed_service.sosProvider()
+        _root = _provider.values[0]
+        service_name = _root.find('.//ows:ProviderName', namespaces=namespaces)
+        individual_name = _root.find('.//ows:IndividualName', namespaces=namespaces)
+
+        ServiceProvider.objects.create(
+            name=service_name.text if service_name is not None else None,
+            site=_provider.site,
+            individual_name=individual_name.text if individual_name is not None else None,
+            position_name=_provider.position,
+            phone=_provider.phone,
+            delivery_point=_provider.address,
+            city=_provider.city,
+            administrative_area=_provider.region,
+            postal_code=_provider.postcode,
+            country=_provider.country,
+            email=_provider.email,
+            service=instance,
+        )
 
     def harvest_resource(self, resource_id: str, geonode_service) -> Layer:
         """Harvest a single resource from the service
@@ -147,6 +171,7 @@ class SosServiceHandler(ServiceHandlerBase):
             self._set_extra_metadata(layer, _resource_detail)
             self._set_feature_of_interest(layer, _resource_detail)
             self._set_offerings(layer, _resource_detail)
+            self._set_responsibles(layer, _resource_detail)
             return layer
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
 
@@ -250,27 +275,25 @@ class SosServiceHandler(ServiceHandlerBase):
                 "bbox",
                 "srs",
                 "extra",
+                "sensor_responsible",
             ],
         )
 
-        query_params = {
-            "service": "SOS",
-            "version": "2.0.0",
-            "request": "DescribeSensor",
-            "procedure": f"{single_procedure}",
-            "procedureDescriptionFormat": "http://www.opengis.net/sensorml/2.0"
-        }
-
-        parsed_url = urlparse(self.url)
-        clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
-        clean_url += '?' + urlencode(query_params)
-
-        _xml = requests.get(clean_url).content
-
+        _xml = self._call_describe_sensor(single_procedure)
         # getting the metadata needed
         parser = DescribeSensorParser(
             _xml, sos_service=self.url, procedure_id=single_procedure
         )
+        if not parser.is_valid():
+            _xml = self._call_describe_sensor(
+                single_procedure,
+                description_format="http://www.opengis.net/sensorML/1.0.1"
+            )
+
+            parser = DescribeSensorParser(
+                _xml, sos_service=self.url, procedure_id=single_procedure, version="v1"
+            )
+            assert parser.is_valid()
 
         return SOSProcedureDetail(
             id=parser.get_id(),
@@ -281,7 +304,24 @@ class SosServiceHandler(ServiceHandlerBase):
             bbox=parser.get_bbox(),
             srs=parser.get_srs(),
             extra=parser.get_extra_metadata(),
+            sensor_responsible=parser.get_sensor_responsible()
         )
+
+    def _call_describe_sensor(self, single_procedure, description_format="http://www.opengis.net/sensorml/2.0"):
+        query_params = {
+            "service": "SOS",
+            "version": "2.0.0",
+            "request": "DescribeSensor",
+            "procedure": f"{single_procedure}",
+            "procedureDescriptionFormat": description_format
+        }
+
+        parsed_url = urlparse(self.url)
+        clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+        clean_url += '?' + urlencode(query_params)
+
+        _xml = requests.get(clean_url).content
+        return _xml
 
     def _set_extra_metadata(self, layer, _resource_detail):
         for mdata in _resource_detail.extra:
@@ -300,6 +340,11 @@ class SosServiceHandler(ServiceHandlerBase):
         for data in _resource_detail.offerings:
             new_m = Offerings.objects.create(resource=layer, **data)
             layer.offerings_set.add(new_m)
+
+    def _set_responsibles(self, layer, _resource_detail):
+        for data in _resource_detail.sensor_responsible:
+            new_m = SensorResponsible.objects.create(resource=layer, **data)
+            layer.sensorresponsible_set.add(new_m)
 
 
 class HandlerDescriptor:

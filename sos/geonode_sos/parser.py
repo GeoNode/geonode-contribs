@@ -33,18 +33,20 @@ class SOSParsingException(Exception):
     pass
 
 
-def get_namespaces():
+def get_namespaces(version="v2"):
     n = Namespaces()
-    ns = n.get_namespaces(["ogc", "om20", "sa", "sml", "swes", "xlink"])
+    ns = n.get_namespaces(["ogc", "om20", "sa", "sml", "swes", "xlink", "gml", "sams", "sf"])
     ns["gco"] = n.get_namespace("gco")
     ns["gmd"] = n.get_namespace("gmd")
     ns["ows"] = n.get_namespace("ows110")
     ns["sos"] = n.get_namespace("sos20")
-    ns["swe"] = n.get_namespace("swe20")
+    ns["swe"] = n.get_namespace("swe")
     ns["gml"] = "http://www.opengis.net/gml/3.2"
-    ns["sml"] = "http://www.opengis.net/sensorml/2.0"
-    ns["sams"] = "http://www.opengis.net/samplingSpatial/2.0"
-    ns["sf"] = "http://www.opengis.net/sampling/2.0"
+    if version == 'v2':
+        ns["swe"] = n.get_namespace("swe20")
+        ns["sml"] = "http://www.opengis.net/sensorml/2.0"
+        ns["sams"] = "http://www.opengis.net/samplingSpatial/2.0"
+        ns["sf"] = "http://www.opengis.net/sampling/2.0"
     return ns
 
 
@@ -58,20 +60,28 @@ class DescribeSensorParser:
     """
 
     def __init__(
-        self, xml_content: str, sos_service: str = None, procedure_id: str = None
+        self, xml_content: str, sos_service: str = None, procedure_id: str = None, version: str = "v2"
     ) -> None:
         self.gda = ET.fromstring(xml_content)
         self.sos_service = sos_service
         self.procedure_id = procedure_id
+        self.ns = get_namespaces(version)
+        self.version = version
 
+    def is_valid(self):
+        _exception = self.gda.find('.//ows:Exception', namespaces=namespaces)
+        if _exception is not None:
+            return False
+        return True
 
     def get_id(self) -> str:
         identifiers_paths = [
             ".//sml:identifier/sml:Term[@definition='urn:ogc:def:identifier:OGC:uniqueID']//sml:value",
             ".//sml:identifier/sml:Term[@definition='urn:ogc:def:identifier:OGC:1.0:uniqueID']//sml:value",
             ".//gml:identifier[@codeSpace='uniqueID']",
+            ".//sml:identifier[@name='uniqueID']//sml:value",
         ]
-        startpath = self.gda.find("*//sml:IdentifierList", namespaces=namespaces)
+        startpath = self.gda.find(".//sml:IdentifierList", namespaces=self.ns)
 
         return self._extract_value(startpath, identifiers_paths)
 
@@ -79,36 +89,42 @@ class DescribeSensorParser:
         title_paths = [
             "sml:identifier[@name='short name']//sml:value",
             ".//sml:identifier/sml:Term[@definition='http://mmisw.org/ont/ioos/definition/shortName']//sml:value",
+            ".//sml:identifier[@name='Short Name']//sml:value",
             ".//sml:identifier/sml:Term[@definition='urn:ogc:def:identifier:OGC:1.0:shortname']//sml:value",
             ".//sml:identifier/sml:Term[@definition='urn:ogc:def:identifier:OGC:1.0:shortName']//sml:value",
             ".//gml:name",
         ]
-        startpath = self.gda.find("*//sml:IdentifierList", namespaces=namespaces)
+        startpath = self.gda.find("*//sml:IdentifierList", namespaces=self.ns)
         return self._extract_value(startpath, title_paths)
 
     def get_long_name(self) -> str:
         long_name_paths = [
             "sml:identifier[@name='long name']//sml:value",
             ".//sml:identifier/sml:Term[@definition='http://mmisw.org/ont/ioos/definition/longName']//sml:value",
+            ".//sml:identifier[@name='Long Name']//sml:value",
             ".//sml:identifier/sml:Term[@definition='urn:ogc:def:identifier:OGC:1.0:longname']//sml:value",
             ".//sml:identifier/sml:Term[@definition='urn:ogc:def:identifier:OGC:1.0:longName']//sml:value",
             ".//gml:description",
         ]
-        startpath = self.gda.find("*//sml:IdentifierList", namespaces=namespaces)
+        startpath = self.gda.find("*//sml:IdentifierList", namespaces=self.ns)
         return self._extract_value(startpath, long_name_paths)
 
     def get_offerings(self) -> Optional[List[dict]]:
-        offerings = self.gda.findall(
-            ".//sml:capabilities[@name='offerings']//sml:capability",
-            namespaces=namespaces,
+        _path = (
+            ".//sml:capabilities[@name='offerings']//sml:capability"
+            if self.version == 'v2'
+            else
+            ".//sml:capabilities[@name='offerings']//swe:field"
         )
+        offerings = self.gda.findall(_path, namespaces=self.ns)
+
         return [
             {
-                "name": x.find("*//swe:label", namespaces=namespaces).text,
-                "definition": x.find("swe:Text", namespaces=namespaces).attrib.get(
+                "name": x.find("*//swe:label", namespaces=self.ns).text,
+                "definition": x.find("swe:Text", namespaces=self.ns).attrib.get(
                     "definition"
                 ),
-                "value": x.find("*//swe:value", namespaces=namespaces).text,
+                "value": x.find("*//swe:value", namespaces=self.ns).text,
             }
             for x in offerings
         ]
@@ -125,7 +141,7 @@ class DescribeSensorParser:
         clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
         clean_url += "?" + urlencode(query_params)
 
-        for _name, _value in namespaces.items():
+        for _name, _value in self.ns.items():
             ET.register_namespace(_name, _value)
 
         feature_of_interest = ET.fromstring(
@@ -133,14 +149,14 @@ class DescribeSensorParser:
         )
         output = []
         for item in feature_of_interest.iterfind(
-            ".//sams:SF_SpatialSamplingFeature", namespaces=namespaces
+            ".//sams:SF_SpatialSamplingFeature", namespaces=self.ns
         ):
-            name = item.find(".//gml:name", namespaces=namespaces)
-            identifier = item.find(".//gml:identifier", namespaces=namespaces)
-            _srs = item.find(".//gml:pos", namespaces=namespaces)
-            description = item.find(".//gml:description", namespaces=namespaces)
+            name = item.find(".//gml:name", namespaces=self.ns)
+            identifier = item.find(".//gml:identifier", namespaces=self.ns)
+            _srs = item.find(".//gml:pos", namespaces=self.ns)
+            description = item.find(".//gml:description", namespaces=self.ns)
             
-            shape_blob = item.find(".//sams:shape", namespaces=namespaces)
+            shape_blob = item.find(".//sams:shape", namespaces=self.ns)
             _srid = f'{_srs.attrib.get("srsName").split("/")[-3]}:{_srs.attrib.get("srsName").split("/")[-1]}'
 
             blob_as_string = ET.tostring(shape_blob).decode().replace("\n", "").replace("  ", "")
@@ -177,13 +193,13 @@ class DescribeSensorParser:
                         "identifier": None if identifier is None else identifier.text,
                         "codespace": name.attrib.get("codeSpace"),
                         "feature_type": item.find(
-                            ".//sf:type", namespaces=namespaces
+                            ".//sf:type", namespaces=self.ns
                         ).attrib.get("{http://www.w3.org/1999/xlink}href", None),
                         "feature_id": item.attrib.get(
                             "{http://www.opengis.net/gml/3.2}id"
                         ),
                         "sampled_feature": item.find(
-                            ".//sf:sampledFeature", namespaces=namespaces
+                            ".//sf:sampledFeature", namespaces=self.ns
                         ).attrib.get("{http://www.w3.org/1999/xlink}href", None),
                         "geometry": foi_geometry,
                         "srs_name": _srid,
@@ -199,7 +215,7 @@ class DescribeSensorParser:
     def get_bbox(self) -> str:
         observedBBOX = self.gda.findall(
             "*//sml:position//swe:coordinate//swe:value",
-            namespaces=namespaces,
+            namespaces=self.ns,
         )
 
         if observedBBOX:
@@ -214,7 +230,7 @@ class DescribeSensorParser:
     def get_srs(self) -> str:
         srs = self.gda.find(
             ".//sml:position/swe:Vector[@referenceFrame]",
-            namespaces=namespaces,
+            namespaces=self.ns,
         )
         if srs is not None:
             return srs.attrib.get("referenceFrame")\
@@ -226,11 +242,11 @@ class DescribeSensorParser:
     def get_extra_metadata(self) -> str:
         extra = []
         for output in self.gda.iterfind(
-            ".//sml:OutputList/sml:output", namespaces=namespaces
+            ".//sml:OutputList/sml:output", namespaces=self.ns
         ):
             check = output.find(
-                ".//swe:Quantity", namespaces=namespaces
-            ) or output.find(".//swe:Time", namespaces=namespaces)
+                ".//swe:Quantity", namespaces=self.ns
+            ) or output.find(".//swe:Time", namespaces=self.ns)
             if check is not None:
                 extra.append(
                     {
@@ -240,17 +256,44 @@ class DescribeSensorParser:
                         "field_value": output.attrib.get("name"),
                         "definition": check.attrib.get("definition"),
                         "uom": check.find(
-                            ".//swe:uom", namespaces=namespaces
+                            ".//swe:uom", namespaces=self.ns
                         ).attrib.get("code", ""),
                     }
                 )
         return extra
 
-    def _extract_value(self, starting_path, search_path):
+    def get_sensor_responsible(self) -> str:
+        extra = []
+        for output in self.gda.iterfind(
+            ".//sml:ContactList//sml:contact", namespaces=self.ns
+        ):
+            arcrole = output.attrib.get('{http://www.w3.org/1999/xlink}arcrole')
+            extra.append(
+                {
+                    "name": self._extract_value(output, ['.//gmd:organisationName//gco:CharacterString']),
+                    "phone": self._extract_value(output, ['.//gmd:voice//gco:CharacterString']),
+                    "delivery_point": self._extract_value(output, ['.//gmd:deliveryPoint//gco:CharacterString']),
+                    "city": self._extract_value(output, ['.//gmd:city//gco:CharacterString']),
+                    "administrative_area": self._extract_value(output, ['.//gmd:administrativeArea//gco:CharacterString'], raise_exep=False),
+                    "postal_code": self._extract_value(output, ['.//gmd:postalCode//gco:CharacterString'], raise_exep=False),
+                    "country": self._extract_value(output, ['.//gmd:country//gco:CharacterString']),
+                    "mail": self._extract_value(output, ['.//gmd:electronicMailAddress//gco:CharacterString']),
+                    "online_resource": self._extract_value(output, ['.//gmd:onlineResource//gmd:URL//gco:CharacterString'], raise_exep=False),
+                    "arcrole": arcrole,
+                    "role": self._extract_value(output,[ ".//gmd:role//gmd:CI_RoleCode"], raise_exep=False),
+                    "extracted_arcrole": arcrole.split("/")[-1]
+                }
+            )
+        return extra
+
+    def _extract_value(self, starting_path, search_path, raise_exep=True):
         for _id_path in search_path:
-            _id = starting_path.find(_id_path, namespaces=namespaces)
+            _id = starting_path.find(_id_path, namespaces=self.ns)
             if _id is not None:
                 return _id.text
+
+        if not raise_exep:
+            return None
 
         raise SOSParsingException(
             "No value found in path with the available identifiers path"

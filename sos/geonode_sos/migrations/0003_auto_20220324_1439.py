@@ -29,23 +29,25 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameField(
-            model_name='featureofinterest',
-            old_name='definition',
-            new_name='code_space',
+            model_name="featureofinterest",
+            old_name="definition",
+            new_name="code_space",
         ),
         migrations.RenameField(
-            model_name='featureofinterest',
-            old_name='value',
-            new_name='sampled_feature',
+            model_name="featureofinterest",
+            old_name="value",
+            new_name="sampled_feature",
         ),
         migrations.AddField(
-            model_name='featureofinterest',
-            name='geometry',
-            field=django.contrib.gis.db.models.fields.PolygonField(blank=True, null=True, srid=4326),
+            model_name="featureofinterest",
+            name="geometry",
+            field=django.contrib.gis.db.models.fields.PolygonField(
+                blank=True, null=True, srid=4326
+            ),
         ),
         migrations.AddField(
-            model_name='featureofinterest',
-            name='geometry_type',
+            model_name="featureofinterest",
+            name="geometry_type",
             field=models.CharField(max_length=255, null=True),
         ),
     ]

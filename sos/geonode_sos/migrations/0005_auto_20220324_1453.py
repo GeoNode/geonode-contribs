@@ -24,13 +24,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('geonode_sos', '0004_auto_20220324_1441'),
+        ("geonode_sos", "0004_auto_20220324_1441"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='featureofinterest',
-            name='geometry',
-            field=django.contrib.gis.db.models.fields.PointField(blank=True, null=True, srid=4326),
+            model_name="featureofinterest",
+            name="geometry",
+            field=django.contrib.gis.db.models.fields.PointField(
+                blank=True, null=True, srid=4326
+            ),
         ),
     ]
