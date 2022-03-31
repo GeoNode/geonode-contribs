@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #########################################################################
 #
 # Copyright (C) 2022 OSGeo
@@ -17,18 +16,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
-=======
->>>>>>> 702ee899c03e743325fdfb31a334bdd3bac9cacb
 import logging
 import re
 import xml.etree.ElementTree as ET
 from typing import List, Optional
 from urllib.parse import urlencode, urlparse
-<<<<<<< HEAD
 from geonode.base.bbox_utils import polygon_from_bbox
-=======
-
->>>>>>> 702ee899c03e743325fdfb31a334bdd3bac9cacb
 import requests
 from django.contrib.gis.geos import GEOSGeometry
 from owslib.namespaces import Namespaces
@@ -169,19 +162,11 @@ class DescribeSensorParser:
                 target.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
                 transform = osr.CoordinateTransformation(source, target)
 
-<<<<<<< HEAD
                 geometry = GEOSGeometry.from_gml(_gml.groups()[0])
                 inverted = ogr.CreateGeometryFromWkt(geometry.wkt)
                 inverted.Transform(transform)
                 
                 foi_geometry = polygon_from_bbox(GEOSGeometry.from_ewkt(inverted.ExportToWkt()).extent)
-=======
-                geometry = GEOSGeometry.from_gml(_gml.groups()[0]).buffer(0.00001)
-                inverted = ogr.CreateGeometryFromWkt(geometry.wkt)
-                inverted.Transform(transform)
-                
-                foi_geometry = GEOSGeometry.from_ewkt(inverted.ExportToWkt())
->>>>>>> 702ee899c03e743325fdfb31a334bdd3bac9cacb
             else:
                 logger.error(f"Geometry not found for {self.procedure_id}")
 
