@@ -24,11 +24,25 @@ from geonode.layers.models import Layer
 from geonode_sos.api.serializer import FeatureOfInterestSerializer, SOSSensorSerializer
 from geonode_sos.models import FeatureOfInterest
 from rest_framework.exceptions import NotFound
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, BaseFilterBackend
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.gis.geos import GEOSGeometry
 import re
+
+class FOISFilter(BaseFilterBackend):
+    """
+    Filter the FOIS by the value inside the payload.
+    Accept a dictionary where:
+     - the key is the Model fiel
+     - an array with the value to use for filtering
+    """
+
+    def filter_queryset(self, request, queryset, view):
+        if request.data:
+            _filter = {f"{key}__in": value for key, value in request.data.items()}
+            return queryset.filter(**_filter)
+        return queryset
 
 
 class CustomSensorsFilter(SearchFilter):
@@ -72,7 +86,7 @@ class FeatureOfInterestViewSet(DynamicModelViewSet):
     serializer_class = FeatureOfInterestSerializer
     filter_backends = [
         DynamicFilterBackend, DynamicSortingFilter, DynamicSearchFilter,
-        ExtentFilter
+        ExtentFilter, FOISFilter
     ]
     pagination_class = GeoNodeApiPagination
     http_method_names = ["get"]
