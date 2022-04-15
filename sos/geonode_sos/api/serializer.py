@@ -33,13 +33,13 @@ class SOSSensorSerializer(DynamicModelSerializer):
             "sensor_name",
             "sosUrl",
             "offeringsIDs",
-            "observedPropertiesIDs",
+            "observablePropertiesIDs",
         )
 
     sensor_name = serializers.SerializerMethodField()
     sosUrl = serializers.SerializerMethodField()
     offeringsIDs = serializers.SerializerMethodField()
-    observedPropertiesIDs = serializers.SerializerMethodField()
+    observablePropertiesIDs = serializers.SerializerMethodField()
 
     def get_sensor_name(self, obj):
         return unquote(obj.name)
@@ -50,7 +50,7 @@ class SOSSensorSerializer(DynamicModelSerializer):
     def get_offeringsIDs(self, obj):
         return [x.value for x in obj.offerings_set.all()]
 
-    def get_observedPropertiesIDs(self, obj):
+    def get_observablePropertiesIDs(self, obj):
         return [x.metadata.get("definition") for x in obj.extrametadata_set.all()]
 
 

@@ -39,7 +39,7 @@ class CustomSensorsFilter(SearchFilter):
 
         sos_url = _filters.pop("sos_url", None)
         title = _filters.pop("title", None)
-        observerd_property = _filters.pop("observerd_property", None)
+        observable_property = _filters.pop("observable_property", None)
         sensor_name = _filters.pop("sensor_name", None)
         _filter = {}
         if sos_url:
@@ -48,10 +48,10 @@ class CustomSensorsFilter(SearchFilter):
             _filter["title__icontains"] = title[0]
         if sensor_name:
             _filter["name__icontains"] = sensor_name[0]
-        if observerd_property:
+        if observable_property:
             _filter[
                 "extrametadata__metadata__definition__icontains"
-            ] = observerd_property[0]
+            ] = observable_property[0]
 
         # generating the other filters dynamically
         for _key, _value in _filters.items():
@@ -98,7 +98,7 @@ class FeatureOfInterestViewSet(DynamicModelViewSet):
                 "procedure": {
                     "id": _foi.resource.id,
                     "offeringsIDs": _foi.resource.offerings_set.values_list('value', flat=True),
-                    "observedPropertiesIDs": [
+                    "observablePropertiesIDs": [
                         x.get("definition")
                         for x in _foi.resource.extrametadata_set.values_list('metadata', flat=True)
                     ],
