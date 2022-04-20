@@ -1,5 +1,5 @@
 from rest_framework.filters import BaseFilterBackend, SearchFilter
-
+import ast
 
 VIEW_FILTERS = {
     "sosservice": {
@@ -57,7 +57,13 @@ class CustomSensorsFilter(SearchFilter):
 
         # generating the other filters dynamically
         for _key, _value in _filters.items():
-            _filter[f"{_key}__icontains"] = _value
+            try:
+                if _value.isnumeric():
+                    _filter[f"{_key}"] = ast.literal_eval(_value)
+                else:
+                    _filter[f"{_key}__icontains"] = _value
+            except Exception:
+                raise
         return queryset.filter(**_filter)
 
 
