@@ -20,8 +20,9 @@ from dynamic_rest.filters import DynamicFilterBackend, DynamicSortingFilter
 from geonode.base.api.filters import DynamicSearchFilter, ExtentFilter
 from dynamic_rest.viewsets import DynamicModelViewSet
 from geonode.base.api.pagination import GeoNodeApiPagination
+from geonode.services.models import Service
 from geonode.layers.models import Layer
-from geonode_sos.api.serializer import FeatureOfInterestSerializer, SOSSensorSerializer
+from geonode_sos.api.serializer import FeatureOfInterestSerializer, SOSSensorSerializer, SOSServiceSerializer
 from geonode_sos.models import FeatureOfInterest
 from rest_framework.exceptions import NotFound
 from rest_framework.filters import SearchFilter, BaseFilterBackend
@@ -79,6 +80,23 @@ class SOSSensorsViewSet(DynamicModelViewSet):
     serializer_class = SOSSensorSerializer
     pagination_class = GeoNodeApiPagination
     http_method_names = ["get"]
+
+
+class SOSServicesViewSet(DynamicModelViewSet):
+    filter_backends = [CustomSensorsFilter]
+    queryset = Service.objects.filter(type="SOS").order_by("id")
+    serializer_class = SOSServiceSerializer
+    pagination_class = GeoNodeApiPagination
+    http_method_names = ["get"]
+
+
+class SOSObservablePropertyViewSet(DynamicModelViewSet):
+    filter_backends = [CustomSensorsFilter]
+    queryset = Service.objects.filter(type="SOS").order_by("id")
+    serializer_class = SOSServiceSerializer
+    pagination_class = GeoNodeApiPagination
+    http_method_names = ["get"]
+
 
 
 class FeatureOfInterestViewSet(DynamicModelViewSet):

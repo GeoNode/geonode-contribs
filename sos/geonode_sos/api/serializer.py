@@ -54,6 +54,12 @@ class SOSSensorSerializer(DynamicModelSerializer):
         return [x.metadata.get("definition") for x in obj.extrametadata_set.all()]
 
 
+class SOSServiceSerializer(DynamicModelSerializer):
+       class Meta:
+        model = Service
+        fields = "__all__"
+
+
 class FeatureOfInterestSerializer(DynamicModelSerializer):
     class Meta:
         model = FeatureOfInterest
