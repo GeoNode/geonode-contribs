@@ -18,3 +18,8 @@ Quick start
     ```python
     SERVICES_TYPE_MODULES = ["geonode_sos.sos_handler.HandlerDescriptor"]
     ```
+
+2. Add this line in `settings.py` add the extra database router in GeoNode
+    ```python
+    DATABASE_ROUTERS = ["geonode_sos.router.DatastoreRouter"]
+    ```
