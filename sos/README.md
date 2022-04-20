@@ -23,3 +23,8 @@ Quick start
     ```python
     DATABASE_ROUTERS = ["geonode_sos.router.DatastoreRouter"]
     ```
+
+Run migrations:
+    ```python
+    python manage.py migrate --database=datastore
+    ```

@@ -23,8 +23,8 @@ from geonode.api.urls import router
 
 router.register(r"sensors", SOSSensorsViewSet, "sensors")
 router.register(r"fois", FeatureOfInterestViewSet, "fois")
-router.register(r"services", SOSServicesViewSet, "sosservice")
-router.register(r"observable", SOSObservablePropertyViewSet, "observable")
+router.register(r"sos_service", SOSServicesViewSet, "sosservice")
+router.register(r"observable_properties", SOSObservablePropertyViewSet, "observable")
 
 urlpatterns = [
     url(r"^api/v2/sos/", include(router.urls)),
