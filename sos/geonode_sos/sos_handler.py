@@ -333,8 +333,7 @@ class SosServiceHandler(ServiceHandlerBase):
 
     def _set_feature_of_interest(self, layer, _resource_detail):
         for data in _resource_detail.feature_of_interest:
-            new_m = FeatureOfInterest.objects.create(resource=layer, **data)
-            layer.featureofinterest_set.add(new_m)
+            FeatureOfInterest.objects.create(resource_id=layer.id, **data)
 
     def _set_offerings(self, layer, _resource_detail):
         for data in _resource_detail.offerings:

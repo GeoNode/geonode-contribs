@@ -16,19 +16,23 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
+import json
+import re
+
+from django.contrib.gis.geos import GEOSGeometry
 from dynamic_rest.filters import DynamicFilterBackend, DynamicSortingFilter
-from geonode.base.api.filters import DynamicSearchFilter, ExtentFilter
 from dynamic_rest.viewsets import DynamicModelViewSet
+from geonode.base.api.filters import DynamicSearchFilter, ExtentFilter
 from geonode.base.api.pagination import GeoNodeApiPagination
 from geonode.layers.models import Layer
-from geonode_sos.api.serializer import FeatureOfInterestSerializer, SOSSensorSerializer
+from geonode_sos.api.serializer import (FeatureOfInterestSerializer,
+                                        SOSSensorSerializer)
 from geonode_sos.models import FeatureOfInterest
-from rest_framework.exceptions import NotFound
-from rest_framework.filters import SearchFilter, BaseFilterBackend
-from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.gis.geos import GEOSGeometry
-import re
+from rest_framework.exceptions import NotFound
+from rest_framework.filters import BaseFilterBackend, SearchFilter
+from rest_framework.response import Response
+
 
 class FOISFilter(BaseFilterBackend):
     """
@@ -99,22 +103,23 @@ class FeatureOfInterestViewSet(DynamicModelViewSet):
             )
 
         _foi = _queryset.first()
+        _foi_resource = Layer.objects.get(id=_foi.resource_id)
         return Response(
             {
                 "id": _foi.id,
                 "identifier": _foi.identifier,
                 "name": _foi.name,
-                "sosUrl": _foi.resource.remote_service.base_url,
+                "sosUrl": _foi_resource.remote_service.base_url,
                 "codespace": _foi.codespace,
                 "feature_type": _foi.feature_type,
                 "sampled_feature": _foi.sampled_feature,
                 "geom": self._get_geojson(_foi),
                 "procedure": {
-                    "id": _foi.resource.id,
-                    "offeringsIDs": _foi.resource.offerings_set.values_list('value', flat=True),
+                    "id": _foi.resource_id,
+                    "offeringsIDs": _foi_resource.offerings_set.values_list('value', flat=True),
                     "observablePropertiesIDs": [
                         x.get("definition")
-                        for x in _foi.resource.extrametadata_set.values_list('metadata', flat=True)
+                        for x in _foi_resource.extrametadata_set.values_list('metadata', flat=True)
                     ],
                 },
             },
@@ -123,6 +128,5 @@ class FeatureOfInterestViewSet(DynamicModelViewSet):
 
     def _get_geojson(self, _foi):
         # getting the Geometry from the XML with regex. only the GML tags are needed
-        import json
         _gml = re.match(r".*?(<gml:.*)</sams.*", _foi.shape_blob)
         return json.loads(GEOSGeometry.from_gml(_gml.groups()[0]).json)

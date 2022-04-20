@@ -51,9 +51,7 @@ class FeatureOfInterest(models.Model):
         null=True
     )
 
-    resource = models.ForeignKey(
-        Layer, null=False, blank=False, on_delete=models.CASCADE
-    )
+    resource_id = models.IntegerField()
 
     class Meta:
         verbose_name = _("Feature of interest")
