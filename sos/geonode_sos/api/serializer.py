@@ -72,6 +72,7 @@ class SOSObservablePropertiesSerializer(DynamicModelSerializer):
     def to_representation(self, instance):
         return {
             "id": instance.id,
+            "sensor_name": instance.resource.layer.name,
             "definition": instance.metadata.get("definition"),
             "property_label": instance.metadata.get("field_label")
         }
