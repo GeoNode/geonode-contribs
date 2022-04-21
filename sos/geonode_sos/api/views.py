@@ -29,7 +29,6 @@ from geonode_sos.api.serializer import (FeatureOfInterestSerializer,
                                         SOSSensorSerializer,
                                         SOSServiceSerializer)
 from geonode_sos.models import FeatureOfInterest
-from rest_framework.response import Response
 
 
 class SOSSensorsViewSet(DynamicModelViewSet):
