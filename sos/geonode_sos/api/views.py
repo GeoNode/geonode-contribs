@@ -20,6 +20,7 @@ from dynamic_rest.filters import DynamicFilterBackend, DynamicSortingFilter
 from dynamic_rest.viewsets import DynamicModelViewSet
 from geonode.base.api.filters import DynamicSearchFilter, ExtentFilter
 from geonode.base.api.pagination import GeoNodeApiPagination
+from geonode.base.models import ExtraMetadata
 from geonode.layers.models import Layer
 from geonode.services.models import Service
 from geonode_sos.api.filters import CustomSensorsFilter, FOISFilter
@@ -49,24 +50,10 @@ class SOSServicesViewSet(DynamicModelViewSet):
 
 class SOSObservablePropertyViewSet(DynamicModelViewSet):
     filter_backends = [CustomSensorsFilter]
-    queryset = Layer.objects.filter(resource_type="sos_sensor").order_by("id")
+    queryset = ExtraMetadata.objects.filter(resource__resource_type="sos_sensor").order_by('id')
     serializer_class = SOSObservablePropertiesSerializer
     pagination_class = GeoNodeApiPagination
     http_method_names = ["get"]
-
-    def list(self, _):
-        queryset = self.get_queryset()
-        filter_backends = self.filter_queryset(queryset)
-        val = [
-            {
-                "id": x.get("definition"),
-                "label": x.get("field_label"),
-            }
-            for _el in filter_backends.iterator()
-            for x in _el.extrametadata_set.values_list("metadata", flat=True).distinct().iterator()
-        ]
-        # removing duplicate
-        return Response([dict(t) for t in {tuple(d.items()) for d in val}])
 
 
 class FeatureOfInterestViewSet(DynamicModelViewSet):

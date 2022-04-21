@@ -68,6 +68,13 @@ class SOSObservablePropertiesSerializer(DynamicModelSerializer):
     class Meta:
         model = Layer
         fields = ('pk',)  
+    
+    def to_representation(self, instance):
+        return {
+            "id": instance.id,
+            "definition": instance.metadata.get("definition"),
+            "property_label": instance.metadata.get("field_label")
+        }
 
 
 class FeatureOfInterestSerializer(DynamicModelSerializer):
