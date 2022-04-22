@@ -359,13 +359,18 @@ class SosServiceHandler(ServiceHandlerBase):
         if not store:
             raise Exception(f"The store does not exists: geonode_data")
 
-        cat.publish_featuretype(
-            name="geonode_sos_featureofinterest",
-            store=store[0], 
-            native_crs="EPSG:4326",
-            srs="EPSG:4326",
-            jdbc_virtual_table="geonode_sos_featureofinterest"
-        )
+        try:
+            cat.publish_featuretype(
+                name="geonode_sos_featureofinterest",
+                store=store, 
+                native_crs="EPSG:4326",
+                srs="EPSG:4326",
+                jdbc_virtual_table="geonode_sos_featureofinterest"
+            )
+        except Exception as e:
+            if "Resource named 'geonode_sos_featureofinterest' already exists in store:" in str(e):
+                return
+            raise e
 
 
 
