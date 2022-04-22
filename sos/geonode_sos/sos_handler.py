@@ -17,7 +17,6 @@
 #
 #########################################################################
 import logging
-import os
 import requests
 import re
 from collections import namedtuple
