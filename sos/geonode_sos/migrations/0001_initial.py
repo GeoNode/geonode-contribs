@@ -10,7 +10,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('services', '0048_auto_20220420_1008'),
         ('layers', '0035_auto_20220223_1547'),
     ]
 

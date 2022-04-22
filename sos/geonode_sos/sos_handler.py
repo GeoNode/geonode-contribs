@@ -17,6 +17,7 @@
 #
 #########################################################################
 import logging
+import os
 import requests
 import re
 from collections import namedtuple
@@ -172,6 +173,7 @@ class SosServiceHandler(ServiceHandlerBase):
             self._set_feature_of_interest(layer, _resource_detail)
             self._set_offerings(layer, _resource_detail)
             self._set_responsibles(layer, _resource_detail)
+            self._publish_data_to_geoserver()
             return layer
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
 
@@ -344,6 +346,27 @@ class SosServiceHandler(ServiceHandlerBase):
         for data in _resource_detail.sensor_responsible:
             new_m = SensorResponsible.objects.create(resource=layer, **data)
             layer.sensorresponsible_set.add(new_m)
+
+    def _publish_data_to_geoserver(self, sensor_name=None):
+        from geoserver.catalog import Catalog
+        cat = Catalog(
+            service_url=f"{settings.GEOSERVER_LOCATION}rest",
+            username=settings.OGC_SERVER_DEFAULT_USER,
+            password=settings.OGC_SERVER_DEFAULT_PASSWORD
+        )
+        store = cat.get_store(name='geonode_data', workspace=self.workspace)
+
+        if not store:
+            raise Exception(f"The store does not exists: geonode_data")
+
+        cat.publish_featuretype(
+            name="geonode_sos_featureofinterest",
+            store=store[0], 
+            native_crs="EPSG:4326",
+            srs="EPSG:4326",
+            jdbc_virtual_table="geonode_sos_featureofinterest"
+        )
+
 
 
 class HandlerDescriptor:
