@@ -16,71 +16,41 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
-import json
-import re
-
-from django.contrib.gis.geos import GEOSGeometry
 from dynamic_rest.filters import DynamicFilterBackend, DynamicSortingFilter
 from dynamic_rest.viewsets import DynamicModelViewSet
 from geonode.base.api.filters import DynamicSearchFilter, ExtentFilter
 from geonode.base.api.pagination import GeoNodeApiPagination
+from geonode.base.models import ExtraMetadata
 from geonode.layers.models import Layer
+from geonode.services.models import Service
+from geonode_sos.api.filters import CustomSensorsFilter, FOISFilter
 from geonode_sos.api.serializer import (FeatureOfInterestSerializer,
-                                        SOSSensorSerializer)
+                                        SOSObservablePropertiesSerializer,
+                                        SOSSensorSerializer,
+                                        SOSServiceSerializer)
 from geonode_sos.models import FeatureOfInterest
-from rest_framework import status
-from rest_framework.exceptions import NotFound
-from rest_framework.filters import BaseFilterBackend, SearchFilter
-from rest_framework.response import Response
-
-
-class FOISFilter(BaseFilterBackend):
-    """
-    Filter the FOIS by the value inside the payload.
-    Accept a dictionary where:
-     - the key is the Model fiel
-     - an array with the value to use for filtering
-    """
-
-    def filter_queryset(self, request, queryset, view):
-        if request.data:
-            _filter = {f"{key}__in": value for key, value in request.data.items()}
-            return queryset.filter(**_filter)
-        return queryset
-
-
-class CustomSensorsFilter(SearchFilter):
-    def filter_queryset(self, request, queryset, _):
-        _filters = request.GET
-        if not _filters:
-            return queryset
-
-        sos_url = _filters.pop("sos_url", None)
-        title = _filters.pop("title", None)
-        observable_property = _filters.pop("observable_property", None)
-        sensor_name = _filters.pop("sensor_name", None)
-        _filter = {}
-        if sos_url:
-            _filter["remote_service__base_url__icontains"] = sos_url[0]
-        if title:
-            _filter["title__icontains"] = title[0]
-        if sensor_name:
-            _filter["name__icontains"] = sensor_name[0]
-        if observable_property:
-            _filter[
-                "extrametadata__metadata__definition__icontains"
-            ] = observable_property[0]
-
-        # generating the other filters dynamically
-        for _key, _value in _filters.items():
-            _filter[f"{_key}__icontains"] = _value
-        return queryset.filter(**_filter)
 
 
 class SOSSensorsViewSet(DynamicModelViewSet):
     filter_backends = [CustomSensorsFilter]
     queryset = Layer.objects.filter(resource_type="sos_sensor").order_by("id")
     serializer_class = SOSSensorSerializer
+    pagination_class = GeoNodeApiPagination
+    http_method_names = ["get"]
+
+
+class SOSServicesViewSet(DynamicModelViewSet):
+    filter_backends = [CustomSensorsFilter]
+    queryset = Service.objects.filter(type="SOS").order_by("id")
+    serializer_class = SOSServiceSerializer
+    pagination_class = GeoNodeApiPagination
+    http_method_names = ["get"]
+
+
+class SOSObservablePropertyViewSet(DynamicModelViewSet):
+    filter_backends = [CustomSensorsFilter]
+    queryset = ExtraMetadata.objects.filter(resource__resource_type="sos_sensor").order_by('id')
+    serializer_class = SOSObservablePropertiesSerializer
     pagination_class = GeoNodeApiPagination
     http_method_names = ["get"]
 
@@ -94,39 +64,3 @@ class FeatureOfInterestViewSet(DynamicModelViewSet):
     ]
     pagination_class = GeoNodeApiPagination
     http_method_names = ["get"]
-
-    def retrieve(self, request, pk=None):
-        _queryset = self.queryset.filter(pk=pk)
-        if not _queryset.exists():
-            raise NotFound(
-                detail=f"The requested FeatureOfInterest does not exists: {pk}"
-            )
-
-        _foi = _queryset.first()
-        _foi_resource = Layer.objects.get(id=_foi.resource_id)
-        return Response(
-            {
-                "id": _foi.id,
-                "identifier": _foi.identifier,
-                "name": _foi.name,
-                "sosUrl": _foi_resource.remote_service.base_url,
-                "codespace": _foi.codespace,
-                "feature_type": _foi.feature_type,
-                "sampled_feature": _foi.sampled_feature,
-                "geom": self._get_geojson(_foi),
-                "procedure": {
-                    "id": _foi.resource_id,
-                    "offeringsIDs": _foi_resource.offerings_set.values_list('value', flat=True),
-                    "observablePropertiesIDs": [
-                        x.get("definition")
-                        for x in _foi_resource.extrametadata_set.values_list('metadata', flat=True)
-                    ],
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    def _get_geojson(self, _foi):
-        # getting the Geometry from the XML with regex. only the GML tags are needed
-        _gml = re.match(r".*?(<gml:.*)</sams.*", _foi.shape_blob)
-        return json.loads(GEOSGeometry.from_gml(_gml.groups()[0]).json)

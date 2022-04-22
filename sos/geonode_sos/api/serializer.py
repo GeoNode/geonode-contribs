@@ -16,12 +16,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
+import json
+import re
+from urllib.parse import unquote
+
+from django.contrib.gis.geos import GEOSGeometry
 from dynamic_rest.serializers import DynamicModelSerializer
 from geonode.layers.models import Layer
-from urllib.parse import unquote
-from rest_framework import serializers
 from geonode.services.models import Service
 from geonode_sos.models import FeatureOfInterest
+from rest_framework import serializers
 
 
 class SOSSensorSerializer(DynamicModelSerializer):
@@ -54,7 +58,53 @@ class SOSSensorSerializer(DynamicModelSerializer):
         return [x.metadata.get("definition") for x in obj.extrametadata_set.all()]
 
 
+class SOSServiceSerializer(DynamicModelSerializer):
+    class Meta:
+        model = Service
+        fields = ('id', 'title', 'online_resource')
+
+
+class SOSObservablePropertiesSerializer(DynamicModelSerializer):
+    class Meta:
+        model = Layer
+        fields = ('pk',)  
+    
+    def to_representation(self, instance):
+        return {
+            "id": instance.id,
+            "sensor_name": instance.resource.layer.name,
+            "definition": instance.metadata.get("definition"),
+            "property_label": instance.metadata.get("field_label")
+        }
+
+
 class FeatureOfInterestSerializer(DynamicModelSerializer):
     class Meta:
         model = FeatureOfInterest
         fields = ("pk", "identifier", "name", "codespace", "sampled_feature")
+    
+    def to_representation(self, _foi):
+        _foi_resource = Layer.objects.get(id=_foi.resource_id)
+        return {
+                "id": _foi.id,
+                "identifier": _foi.identifier,
+                "name": _foi.name,
+                "sosUrl": _foi_resource.remote_service.base_url,
+                "codespace": _foi.codespace,
+                "feature_type": _foi.feature_type,
+                "sampled_feature": _foi.sampled_feature,
+                "geom": self._get_geojson(_foi),
+                "procedure": {
+                    "id": _foi.resource_id,
+                    "offeringsIDs": _foi_resource.offerings_set.values_list('value', flat=True),
+                    "observablePropertiesIDs": [
+                        x.get("definition")
+                        for x in _foi_resource.extrametadata_set.values_list('metadata', flat=True)
+                    ],
+                },
+            }
+
+    def _get_geojson(self, _foi):
+        # getting the Geometry from the XML with regex. only the GML tags are needed
+        _gml = re.match(r".*?(<gml:.*)</sams.*", _foi.shape_blob)
+        return json.loads(GEOSGeometry.from_gml(_gml.groups()[0]).json)
