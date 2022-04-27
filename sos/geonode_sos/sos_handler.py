@@ -37,8 +37,11 @@ from geonode.services.serviceprocessors.base import (
 )
 from sos4py.main import connection_sos
 from urllib.parse import parse_qs, urlparse, urlencode
-from geonode_sos.models import FeatureOfInterest, Offerings, ServiceProvider, SensorResponsible
+from geonode_sos.models import create_dynamic_model_instance, Offerings, ServiceProvider, SensorResponsible
 from geonode_sos.parser import DescribeSensorParser, namespaces
+from dynamic_models.models import ModelSchema
+from django.conf import settings as django_settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -169,10 +172,10 @@ class SosServiceHandler(ServiceHandlerBase):
                 _resource_as_dict["is_published"] = False
             layer = self._create_layer(_resource_as_dict, geonode_service)
             self._set_extra_metadata(layer, _resource_detail)
-            self._set_feature_of_interest(layer, _resource_detail)
+            foi_table_name =  self._set_feature_of_interest(layer, _resource_detail)
             self._set_offerings(layer, _resource_detail)
             self._set_responsibles(layer, _resource_detail)
-            self._publish_data_to_geoserver()
+            self._publish_data_to_geoserver(foi_table_name)
             return layer
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
 
@@ -333,8 +336,14 @@ class SosServiceHandler(ServiceHandlerBase):
             layer.metadata.add(new_m)
 
     def _set_feature_of_interest(self, layer, _resource_detail):
+        name = f"resource_{layer.id}"
+        foi_schema = ModelSchema.objects.create(name=name, db_name="datastore")
+        dynamic_model = create_dynamic_model_instance(dynamic_model_schema=foi_schema)
+
         for data in _resource_detail.feature_of_interest:
-            FeatureOfInterest.objects.create(resource_id=layer.id, **data)
+            dynamic_model.objects.create(**{**data, **{"resource_id": layer.id}})
+
+        return f'{django_settings.DYNAMIC_MODELS.get("USE_APP_LABEL")}_{name}'
 
     def _set_offerings(self, layer, _resource_detail):
         for data in _resource_detail.offerings:
@@ -346,7 +355,7 @@ class SosServiceHandler(ServiceHandlerBase):
             new_m = SensorResponsible.objects.create(resource=layer, **data)
             layer.sensorresponsible_set.add(new_m)
 
-    def _publish_data_to_geoserver(self, sensor_name=None):
+    def _publish_data_to_geoserver(self, foi_table_name=None):
         from geoserver.catalog import Catalog
         cat = Catalog(
             service_url=f"{settings.GEOSERVER_LOCATION}rest",
@@ -360,14 +369,14 @@ class SosServiceHandler(ServiceHandlerBase):
 
         try:
             cat.publish_featuretype(
-                name="geonode_sos_featureofinterest",
+                name=foi_table_name,
                 store=store, 
                 native_crs="EPSG:4326",
                 srs="EPSG:4326",
-                jdbc_virtual_table="geonode_sos_featureofinterest"
+                jdbc_virtual_table=foi_table_name
             )
         except Exception as e:
-            if "Resource named 'geonode_sos_featureofinterest' already exists in store:" in str(e):
+            if f"Resource named '{foi_table_name}' already exists in store:" in str(e):
                 return
             raise e
 

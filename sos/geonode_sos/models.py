@@ -19,13 +19,14 @@
 from django.contrib.gis.db.models import PolygonField
 from django.db import models
 from django.utils.translation import ugettext as _
+from dynamic_models.models import FieldSchema
 from geonode.layers.models import Layer
 
 
 CONTACT_TYPES = [
     ("manufacturerName", "manufacturerName"),
     ("owner", "owner"),
-    ("pointOfContact", "pointOfContact")
+    ("pointOfContact", "pointOfContact"),
 ]
 
 
@@ -36,20 +37,12 @@ class FeatureOfInterest(models.Model):
     codespace = models.CharField(max_length=2000, null=True)
     feature_type = models.CharField(max_length=2000, null=True)
     feature_id = models.CharField(max_length=2000, null=True)
-    sampled_feature  = models.CharField(max_length=2000, null=True)
+    sampled_feature = models.CharField(max_length=2000, null=True)
     geometry = PolygonField(null=True, blank=True)
 
     srs_name = models.CharField(max_length=255, null=True)
-    description = models.TextField(
-        max_length=2000,
-        blank=True,
-        null=True
-    )
-    shape_blob = models.TextField(
-        max_length=2000,
-        blank=True,
-        null=True
-    )
+    description = models.TextField(max_length=2000, blank=True, null=True)
+    shape_blob = models.TextField(max_length=2000, blank=True, null=True)
 
     resource_id = models.IntegerField()
 
@@ -117,8 +110,99 @@ class SensorResponsible(models.Model):
     online_resource = models.CharField(max_length=2000, null=True)
     arcrole = models.CharField(max_length=2000, null=True)
     role = models.CharField(max_length=255, null=True)
-    extracted_arcrole = models.CharField(max_length=255, null=True, choices=CONTACT_TYPES)
+    extracted_arcrole = models.CharField(
+        max_length=255, null=True, choices=CONTACT_TYPES
+    )
 
     resource = models.ForeignKey(
         Layer, null=False, blank=False, on_delete=models.CASCADE
     )
+
+
+def create_dynamic_model_instance(dynamic_model_schema):
+    FieldSchema.objects.create(
+        name="name",
+        class_name="django.db.models.CharField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"max_length": 255, "null": True}
+    )
+
+    FieldSchema.objects.create(
+        name="identifier",
+        class_name="django.db.models.CharField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"max_length": 255, "null": True}
+    )
+
+    FieldSchema.objects.create(
+        name="codespace",
+        class_name="django.db.models.CharField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"max_length": 255, "null": True}
+    )
+
+    FieldSchema.objects.create(
+        name="feature_type",
+        class_name="django.db.models.CharField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"max_length": 255, "null": True}
+    )
+
+    FieldSchema.objects.create(
+        name="feature_id",
+        class_name="django.db.models.CharField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"max_length": 255, "null": True}
+    )
+
+    FieldSchema.objects.create(
+        name="sampled_feature",
+        class_name="django.db.models.CharField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"max_length": 255, "null": True}
+    )
+
+    FieldSchema.objects.create(
+        name="geometry",
+        class_name="django.contrib.gis.db.models.PolygonField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore'
+    )
+
+    FieldSchema.objects.create(
+        name="srs_name",
+        class_name="django.db.models.CharField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"max_length": 255, "null": True}
+    )
+
+    FieldSchema.objects.create(
+        name="description",
+        class_name="django.db.models.TextField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"null": True}
+    )
+    FieldSchema.objects.create(
+        name="shape_blob",
+        class_name="django.db.models.TextField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore',
+        kwargs={"null": True}
+    )
+
+    FieldSchema.objects.create(
+        name="resource_id",
+        class_name="django.db.models.IntegerField",
+        model_schema=dynamic_model_schema,
+        db_name='datastore'
+    )
+
+    return dynamic_model_schema.as_model()
