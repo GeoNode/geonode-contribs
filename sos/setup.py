@@ -32,5 +32,5 @@ setup(
     packages=find_packages(),
     package_data={"": ["*.html", "*.js"]},
     include_package_data=True,
-    install_requires=["sos4py==0.3.0", "django-dynamic-model==0.3.0"],    
+    install_requires=["sos4py==0.3.0", "django-dynamic-model==0.4.0"],    
 )
