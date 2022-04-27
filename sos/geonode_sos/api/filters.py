@@ -46,22 +46,6 @@ VIEW_FILTERS_MAPPING = {
 }
 
 
-class FOISFilter(BaseFilterBackend):
-    """
-    Filter the FOIS by the value inside the payload.
-    Accept a dictionary where:
-     - the key is the Model fiel
-     - an array with the value to use for filtering
-    """
-
-    def filter_queryset(self, request, queryset, view):
-        if request.data:
-            _filter = {f"{key}__in": value for key, value in request.data.items()}
-            return queryset.filter(**_filter)
-        return queryset
-
-
-
 class CustomSensorsFilter(SearchFilter):
 
     def filter_queryset(self, request, queryset, view):
