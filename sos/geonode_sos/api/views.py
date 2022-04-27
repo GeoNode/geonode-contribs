@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
+from django.db.models.query import QuerySet
 from dynamic_rest.filters import DynamicFilterBackend, DynamicSortingFilter
 from dynamic_rest.viewsets import DynamicModelViewSet
 from geonode.base.api.filters import DynamicSearchFilter, ExtentFilter
@@ -28,7 +29,7 @@ from geonode_sos.api.serializer import (FeatureOfInterestSerializer,
                                         SOSObservablePropertiesSerializer,
                                         SOSSensorSerializer,
                                         SOSServiceSerializer)
-from geonode_sos.models import FeatureOfInterest
+from dynamic_models.models import ModelSchema
 
 
 class SOSSensorsViewSet(DynamicModelViewSet):
@@ -56,11 +57,20 @@ class SOSObservablePropertyViewSet(DynamicModelViewSet):
 
 
 class FeatureOfInterestViewSet(DynamicModelViewSet):
-    queryset = FeatureOfInterest.objects.all().order_by('id')
+    queryset = ModelSchema.objects.all().order_by('id')
     serializer_class = FeatureOfInterestSerializer
-    filter_backends = [
-        DynamicFilterBackend, DynamicSortingFilter, DynamicSearchFilter,
-        ExtentFilter, FOISFilter
-    ]
+    filter_backends = [FOISFilter]
     pagination_class = GeoNodeApiPagination
     http_method_names = ["get"]
+
+    def get_queryset(self, queryset=None):
+        data = None
+        for _model in ModelSchema.objects.iterator():
+            _model_instance = _model.as_model()
+            if _model_instance.objects.exists():
+                if not data:
+                    data = _model_instance.objects.all()
+                else:
+                    data = data.union(_model_instance.objects.all())
+
+        return data.order_by('id')

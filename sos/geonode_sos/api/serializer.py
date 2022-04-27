@@ -23,6 +23,7 @@ from urllib.parse import unquote
 from django.contrib.gis.geos import GEOSGeometry
 from dynamic_rest.serializers import DynamicModelSerializer
 from geonode.layers.models import Layer
+from geonode_sos.models import FeatureOfInterest
 from geonode.services.models import Service
 from rest_framework import serializers
 
@@ -79,8 +80,8 @@ class SOSObservablePropertiesSerializer(DynamicModelSerializer):
 
 class FeatureOfInterestSerializer(DynamicModelSerializer):
     class Meta:
-        model = "FeatureOfInterest"
-        fields = ("pk", "identifier", "name", "codespace", "sampled_feature")
+        model = FeatureOfInterest
+        fields = ("pk", "name")
     
     def to_representation(self, _foi):
         _foi_resource = Layer.objects.get(id=_foi.resource_id)
