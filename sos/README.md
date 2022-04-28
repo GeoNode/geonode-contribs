@@ -24,7 +24,7 @@ Quick start
     DATABASE_ROUTERS = ["geonode_sos.router.DatastoreRouter"]
     ```
 
-1. add this dict in `settings.py` to enable dyunamic models
+1. add this dict in `settings.py` to enable dynamic models
     
     ```python
     DYNAMIC_MODELS = {
@@ -35,5 +35,6 @@ Quick start
 Run migrations:
     ```python
     python manage.py migrate
+ 
     python manage.py migrate --database=datastore
     ```
