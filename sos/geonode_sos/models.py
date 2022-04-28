@@ -137,7 +137,6 @@ def delete_dynamic_model(instance, sender, **kwargs):
         # Removing Field Schema
     except Exception as e:
         logger.error(f"Error during deletion of Dynamic Model schema: {e.args[0]}")
-        pass
 
 
 models.signals.post_delete.connect(delete_dynamic_model, sender=Layer)
