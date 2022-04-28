@@ -18,11 +18,10 @@
 #########################################################################
 from django.conf.urls import url, include
 from geonode.api.urls import router
-from geonode_sos.api.views import SOSSensorsViewSet, FeatureOfInterestViewSet, SOSServicesViewSet, SOSObservablePropertyViewSet
+from geonode_sos.api.views import SOSSensorsViewSet, SOSServicesViewSet, SOSObservablePropertyViewSet
 from geonode.api.urls import router
 
 router.register(r"sensors", SOSSensorsViewSet, "sensors")
-router.register(r"fois", FeatureOfInterestViewSet, "fois")
 router.register(r"sos_service", SOSServicesViewSet, "sosservice")
 router.register(r"observable_properties", SOSObservablePropertyViewSet, "observable")
 

@@ -17,7 +17,7 @@
 #
 #########################################################################
 from typing import Tuple
-from rest_framework.filters import BaseFilterBackend, SearchFilter
+from rest_framework.filters import SearchFilter
 from django.db.models import Q
 import ast
 
@@ -44,22 +44,6 @@ VIEW_FILTERS_MAPPING = {
         "property_label": "extrametadata__metadata__field_label__icontains",
     }
 }
-
-
-class FOISFilter(BaseFilterBackend):
-    """
-    Filter the FOIS by the value inside the payload.
-    Accept a dictionary where:
-     - the key is the Model fiel
-     - an array with the value to use for filtering
-    """
-
-    def filter_queryset(self, request, queryset, view):
-        if request.data:
-            _filter = {f"{key}__in": value for key, value in request.data.items()}
-            return queryset.filter(**_filter)
-        return queryset
-
 
 
 class CustomSensorsFilter(SearchFilter):

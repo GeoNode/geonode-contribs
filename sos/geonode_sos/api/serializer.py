@@ -21,10 +21,9 @@ import re
 from urllib.parse import unquote
 
 from django.contrib.gis.geos import GEOSGeometry
-from dynamic_rest.serializers import DynamicModelSerializer
+from dynamic_rest.serializers import DynamicModelSerializer, DynamicEphemeralSerializer
 from geonode.layers.models import Layer
 from geonode.services.models import Service
-from geonode_sos.models import FeatureOfInterest
 from rest_framework import serializers
 
 
@@ -78,10 +77,9 @@ class SOSObservablePropertiesSerializer(DynamicModelSerializer):
         }
 
 
-class FeatureOfInterestSerializer(DynamicModelSerializer):
+class FeatureOfInterestSerializer(DynamicEphemeralSerializer):
     class Meta:
-        model = FeatureOfInterest
-        fields = ("pk", "identifier", "name", "codespace", "sampled_feature")
+        fields = ("pk", "name")
     
     def to_representation(self, _foi):
         _foi_resource = Layer.objects.get(id=_foi.resource_id)

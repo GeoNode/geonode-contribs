@@ -22,15 +22,14 @@ class DatastoreRouter:
     """
 
     foi_model = {
-        'app': 'geonode_sos',
-        "model_name": "featureofinterest"
+        'app_label': ['geonode_sos_foi', 'dynamic_models'],
     }
 
     def db_for_read(self, model, **hints):
         '''
             Redirect to the datastore model for the FeatureOfInterest
         '''
-        if model._meta.model_name == self.foi_model.get('model_name'):
+        if model._meta.app_label in self.foi_model.get('app_label'):
             return 'datastore'
         return None
 
@@ -38,7 +37,7 @@ class DatastoreRouter:
         '''
             Redirect to the datastore model for the FeatureOfInterest
         '''        
-        if model._meta.model_name == self.foi_model.get('model_name'):
+        if model._meta.app_label in self.foi_model.get('app_label'):
             return 'datastore'
         return None
 
@@ -46,7 +45,7 @@ class DatastoreRouter:
         '''
             Redirect to the datastore model for the FeatureOfInterest
         '''        
-        if obj1._meta.model_name == self.foi_model.get('model_name') or \
+        if obj1._meta.app_label in self.foi_model.get('app_label') or \
            obj2._meta.app_label == 'layer':
            return True
         return None
@@ -55,6 +54,6 @@ class DatastoreRouter:
         '''
             Redirect to the datastore model for the FeatureOfInterest
         '''        
-        if model_name == self.foi_model.get('model_name') and app_label == self.foi_model.get('app'):
+        if app_label in self.foi_model.get('app_label'):
             return db == 'datastore'
         return None if db == 'default' else False
