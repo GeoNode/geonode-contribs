@@ -113,7 +113,6 @@ def create_dynamic_model_instance(dynamic_model_schema):
         {"name": "resource_id", "class_name": "django.db.models.IntegerField", "null": False},
     ]
 
-
     for field in fields:
         _kwargs = {"null": field['null']}
         if field['class_name'].endswith('CharField'):

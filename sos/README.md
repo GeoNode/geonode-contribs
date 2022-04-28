@@ -34,5 +34,6 @@ Quick start
 
 Run migrations:
     ```python
+    python manage.py migrate
     python manage.py migrate --database=datastore
     ```
