@@ -16,11 +16,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
-from django.contrib.gis.db.models import PolygonField
+
 from django.db import models
 from django.utils.translation import ugettext as _
-from dynamic_models.models import FieldSchema
+from dynamic_models.models import FieldSchema, ModelSchema
 from geonode.layers.models import Layer
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 CONTACT_TYPES = [
@@ -96,89 +99,46 @@ class SensorResponsible(models.Model):
 
 
 def create_dynamic_model_instance(dynamic_model_schema):
-    FieldSchema.objects.create(
-        name="name",
-        class_name="django.db.models.CharField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"max_length": 255, "null": True}
-    )
+    fields = [
+        {"name": "name", "class_name": "django.db.models.CharField", "null": False},
+        {"name": "identifier", "class_name": "django.db.models.CharField", "null": True},
+        {"name": "codespace", "class_name": "django.db.models.CharField", "null": True},
+        {"name": "feature_type", "class_name": "django.db.models.CharField", "null": True},
+        {"name": "feature_id", "class_name": "django.db.models.CharField", "null": True},
+        {"name": "sampled_feature", "class_name": "django.db.models.CharField", "null": True},
+        {"name": "geometry", "class_name": "django.contrib.gis.db.models.PolygonField", "null": False},
+        {"name": "srs_name", "class_name": "django.db.models.CharField", "null": True},
+        {"name": "description", "class_name": "django.db.models.TextField", "null": True},
+        {"name": "shape_blob", "class_name": "django.db.models.TextField", "null": False},
+        {"name": "resource_id", "class_name": "django.db.models.IntegerField", "null": False},
+    ]
 
-    FieldSchema.objects.create(
-        name="identifier",
-        class_name="django.db.models.CharField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"max_length": 255, "null": True}
-    )
 
-    FieldSchema.objects.create(
-        name="codespace",
-        class_name="django.db.models.CharField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"max_length": 255, "null": True}
-    )
-
-    FieldSchema.objects.create(
-        name="feature_type",
-        class_name="django.db.models.CharField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"max_length": 255, "null": True}
-    )
-
-    FieldSchema.objects.create(
-        name="feature_id",
-        class_name="django.db.models.CharField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"max_length": 255, "null": True}
-    )
-
-    FieldSchema.objects.create(
-        name="sampled_feature",
-        class_name="django.db.models.CharField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"max_length": 255, "null": True}
-    )
-
-    FieldSchema.objects.create(
-        name="geometry",
-        class_name="django.contrib.gis.db.models.PolygonField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore'
-    )
-
-    FieldSchema.objects.create(
-        name="srs_name",
-        class_name="django.db.models.CharField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"max_length": 255, "null": True}
-    )
-
-    FieldSchema.objects.create(
-        name="description",
-        class_name="django.db.models.TextField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"null": True}
-    )
-    FieldSchema.objects.create(
-        name="shape_blob",
-        class_name="django.db.models.TextField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore',
-        kwargs={"null": True}
-    )
-
-    FieldSchema.objects.create(
-        name="resource_id",
-        class_name="django.db.models.IntegerField",
-        model_schema=dynamic_model_schema,
-        db_name='datastore'
-    )
+    for field in fields:
+        _kwargs = {"null": field['null']}
+        if field['class_name'].endswith('CharField'):
+            _kwargs = {**_kwargs, **{"max_length": 255}}
+        FieldSchema.objects.create(
+            name=field['name'],
+            class_name=field['class_name'],
+            model_schema=dynamic_model_schema,
+            db_name='datastore',
+            kwargs=_kwargs
+        )
 
     return dynamic_model_schema.as_model()
+
+
+def delete_dynamic_model(instance, sender, **kwargs):
+    '''
+    Delete the FOI related to a single Sensor
+    '''
+    try:
+        ModelSchema.objects.get(name=f"resource_{instance.id}").delete()
+        # Removing Field Schema
+    except Exception as e:
+        logger.error(f"Error during deletion of Dynamic Model schema: {e.args[0]}")
+        pass
+
+
+models.signals.post_delete.connect(delete_dynamic_model, sender=Layer)
