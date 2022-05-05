@@ -21,6 +21,11 @@ from django.db import models
 from django.utils.translation import ugettext as _
 from dynamic_models.models import FieldSchema, ModelSchema
 from geonode.layers.models import Layer
+from django.conf import settings as django_settings
+from geonode.services.serviceprocessors.base import (
+    get_geoserver_cascading_workspace,
+)
+from geonode.geoserver.signals import geoserver_delete
 import logging
 
 logger = logging.getLogger(__name__)
@@ -121,7 +126,6 @@ def create_dynamic_model_instance(dynamic_model_schema):
             name=field['name'],
             class_name=field['class_name'],
             model_schema=dynamic_model_schema,
-            db_name='datastore',
             kwargs=_kwargs
         )
 
@@ -133,7 +137,11 @@ def delete_dynamic_model(instance, sender, **kwargs):
     Delete the FOI related to a single Sensor
     '''
     try:
-        ModelSchema.objects.get(name=f"resource_{instance.id}").delete()
+        ModelSchema.objects.filter(name=f"resource_{instance.id}").delete()
+        FieldSchema.objects.filter(name=f"resource_{instance.id}").delete()
+
+        workspace = get_geoserver_cascading_workspace(create=False)
+        geoserver_delete(f'{workspace.name}:{django_settings.DYNAMIC_MODELS.get("USE_APP_LABEL")}_resource_{instance.id}')
         # Removing Field Schema
     except Exception as e:
         logger.error(f"Error during deletion of Dynamic Model schema: {e.args[0]}")

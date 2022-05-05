@@ -29,8 +29,9 @@ from django.utils.translation import ugettext as _
 from geonode import settings
 from geonode.base.bbox_utils import BBOXHelper
 from geonode.base.models import ExtraMetadata, Link
+from geonode.geoserver.security import set_geowebcache_invalidate_cache
 from geonode.layers.models import Layer
-from geonode.services.enumerations import INDEXED
+from geonode.services.enumerations import HARVESTED
 from geonode.services.serviceprocessors.base import (
     ServiceHandlerBase,
     get_geoserver_cascading_workspace,
@@ -54,7 +55,7 @@ class SosServiceHandler(ServiceHandlerBase):
         ServiceHandlerBase.__init__(self, url)
         self.proxy_base = None
         self.url = url
-        self.indexing_method = INDEXED
+        self.indexing_method = HARVESTED
         self.content_response = None
         self.name = slugify(self.url)[:255]
         self.workspace = get_geoserver_cascading_workspace(create=False)
@@ -114,33 +115,12 @@ class SosServiceHandler(ServiceHandlerBase):
             name=self.name,
             title=_response.title,
             abstract=_response.abstract or _("Not provided"),
-            online_resource=self.url,
+            online_resource=self.url
         )
         instance.save()
         self._service_provider(instance)
 
         return instance
-
-    def _service_provider(self, instance):
-        _provider = self.parsed_service.sosProvider()
-        _root = _provider.values[0]
-        service_name = _root.find('.//ows:ProviderName', namespaces=namespaces)
-        individual_name = _root.find('.//ows:IndividualName', namespaces=namespaces)
-
-        ServiceProvider.objects.create(
-            name=service_name.text if service_name is not None else None,
-            site=_provider.site,
-            individual_name=individual_name.text if individual_name is not None else None,
-            position_name=_provider.position,
-            phone=_provider.phone,
-            delivery_point=_provider.address,
-            city=_provider.city,
-            administrative_area=_provider.region,
-            postal_code=_provider.postcode,
-            country=_provider.country,
-            email=_provider.email,
-            service=instance,
-        )
 
     def harvest_resource(self, resource_id: str, geonode_service) -> Layer:
         """Harvest a single resource from the service
@@ -176,6 +156,14 @@ class SosServiceHandler(ServiceHandlerBase):
             self._set_offerings(layer, _resource_detail)
             self._set_responsibles(layer, _resource_detail)
             self._publish_data_to_geoserver(foi_table_name)
+
+            self._update_alternate(
+                layer=layer,
+                procedure_id=_exists,
+                new_alternate=f'{self.workspace.name}:{foi_table_name}'
+            )
+
+            set_geowebcache_invalidate_cache(f'{self.workspace.name}:{foi_table_name}')
             return layer
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
 
@@ -238,6 +226,27 @@ class SosServiceHandler(ServiceHandlerBase):
                 ]
             ).as_polygon()
         return payload
+
+    def _service_provider(self, instance):
+        _provider = self.parsed_service.sosProvider()
+        _root = _provider.values[0]
+        service_name = _root.find('.//ows:ProviderName', namespaces=namespaces)
+        individual_name = _root.find('.//ows:IndividualName', namespaces=namespaces)
+
+        ServiceProvider.objects.create(
+            name=service_name.text if service_name is not None else None,
+            site=_provider.site,
+            individual_name=individual_name.text if individual_name is not None else None,
+            position_name=_provider.position,
+            phone=_provider.phone,
+            delivery_point=_provider.address,
+            city=_provider.city,
+            administrative_area=_provider.region,
+            postal_code=_provider.postcode,
+            country=_provider.country,
+            email=_provider.email,
+            service=instance,
+        )
 
     def _create_ows_link(self, geonode_layer: Layer, _url: str) -> None:
         Link.objects.get_or_create(
@@ -354,6 +363,21 @@ class SosServiceHandler(ServiceHandlerBase):
         for data in _resource_detail.sensor_responsible:
             new_m = SensorResponsible.objects.create(resource=layer, **data)
             layer.sensorresponsible_set.add(new_m)
+    
+    def _update_alternate(self, layer, procedure_id: str, new_alternate: str):
+        '''
+        This update is needed because we want to show into the minimap
+        the FOI of the sensor. But we have the FOI table name AFTER the layer save
+        So ones is created we need to update the alternate in the Layer, Harvest and Harvest job tables
+        '''
+        layer.alternate = new_alternate
+        layer.save()
+        from geonode.services.models import HarvestJob
+
+        _job = HarvestJob.objects.get(resource_id=procedure_id)
+        _job.resource_id=new_alternate
+        _job.save()
+        _job.refresh_from_db()
 
     def _publish_data_to_geoserver(self, foi_table_name=None):
         from geoserver.catalog import Catalog
