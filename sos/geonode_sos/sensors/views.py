@@ -60,7 +60,7 @@ def harvest_resources(request, service_id):
             reverse("rescan_service", kwargs={"service_id": service.id})
         )
     if request.method == "GET":
-        if service.layer_set.first().resource_type == 'sos_sensor':
+        if service.type == 'SOS':
             return overwrite_harvest_resources_handle_get(request, service, handler)
         return harvest_resources_handle_get(request, service, handler)
     elif request.method == "POST":
