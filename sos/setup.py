@@ -30,7 +30,6 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     packages=find_packages(),
-    package_data={"": ["*.html", "*.js"]},
     include_package_data=True,
     install_requires=[
         "sos4py==0.3.0",
