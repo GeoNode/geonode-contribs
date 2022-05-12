@@ -4,6 +4,8 @@ Geonode SOS Services
 
 geonode-sos is a geonode app used to harvest SOS 2 sensors into geonode services
 
+**IMPORTANT** this module is currently targeting only GeoNode 3.3.x
+
 
 Quick start
 -----------
