@@ -42,6 +42,10 @@ from geonode_sos.models import create_dynamic_model_instance, Offerings, Service
 from geonode_sos.parser import DescribeSensorParser, namespaces
 from dynamic_models.models import ModelSchema
 from django.conf import settings as django_settings
+from django.contrib.gis.db.models import Extent
+
+from geonode.thumbs.thumbnails import _generate_thumbnail_name, _layers_locations, create_thumbnail_from_locations
+from geonode.thumbs.utils import clean_bbox
 
 
 logger = logging.getLogger(__name__)
@@ -162,6 +166,10 @@ class SosServiceHandler(ServiceHandlerBase):
                 procedure_id=_exists,
                 new_alternate=f'{self.workspace.name}:{foi_table_name}'
             )
+
+            _bbox = self._calculate_FOI_polygon_as_bbox(layer=layer)
+
+            self._update_thumbnail(layer=layer, _bbox=_bbox)
 
             set_geowebcache_invalidate_cache(f'{self.workspace.name}:{foi_table_name}')
             return layer
@@ -404,6 +412,42 @@ class SosServiceHandler(ServiceHandlerBase):
                 return
             raise e
 
+    def _calculate_FOI_polygon_as_bbox(self, layer):
+        _fois = ModelSchema.objects.filter(name=f"resource_{layer.id}")
+
+        if not _fois.exists():
+            return
+
+        qs = _fois.first().as_model().objects.aggregate(Extent('geometry'))
+        qs['geometry__extent']
+        _polygon = BBOXHelper.from_xy(
+            [
+                qs['geometry__extent'][0],
+                qs['geometry__extent'][2],
+                qs['geometry__extent'][1],
+                qs['geometry__extent'][3],
+            ]
+        ).as_polygon()
+        layer.bbox_polygon = _polygon
+        layer.ll_bbox_polygon = _polygon
+        layer.save()
+        return qs['geometry__extent']
+    
+    def _update_thumbnail(self, layer, _bbox):
+        from geonode.geoserver.helpers import ogc_server_settings
+        locations = [[ogc_server_settings.LOCATION, [layer.alternate], []]]
+
+        thumb_url = create_thumbnail_from_locations(
+            instance=layer,
+            locations=locations,
+            layers_bbox=[],
+            default_thumbnail_name=_generate_thumbnail_name(layer),
+            compute_bbox_from_layers=False,
+            is_map_with_datasets=False,
+            bbox=clean_bbox(layer.ll_bbox, "EPSG:4326"),
+        )
+
+        Layer.objects.filter(id=layer.id).update(thumbnail_url=thumb_url)
 
 
 class HandlerDescriptor:
