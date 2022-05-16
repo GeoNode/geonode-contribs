@@ -44,7 +44,7 @@ from dynamic_models.models import ModelSchema
 from django.conf import settings as django_settings
 from django.contrib.gis.db.models import Extent
 
-from geonode.thumbs.thumbnails import _generate_thumbnail_name, _layers_locations, create_thumbnail_from_locations
+from geonode.thumbs.thumbnails import _generate_thumbnail_name, create_thumbnail_from_locations
 from geonode.thumbs.utils import clean_bbox
 
 
