@@ -22,6 +22,7 @@ from urllib.parse import unquote
 
 from django.contrib.gis.geos import GEOSGeometry
 from dynamic_rest.serializers import DynamicModelSerializer, DynamicEphemeralSerializer
+from geonode.base.api.serializers import ThumbnailUrlField
 from geonode.layers.models import Layer
 from geonode.services.models import Service
 from rest_framework import serializers
@@ -33,6 +34,8 @@ class SOSSensorSerializer(DynamicModelSerializer):
         fields = (
             "pk",
             "title",
+            "alternate",
+            "thumbnail_url",
             "sensor_name",
             "sosUrl",
             "offeringsIDs",
@@ -40,6 +43,7 @@ class SOSSensorSerializer(DynamicModelSerializer):
         )
 
     sensor_name = serializers.SerializerMethodField()
+    thumbnail_url = ThumbnailUrlField()
     sosUrl = serializers.SerializerMethodField()
     offeringsIDs = serializers.SerializerMethodField()
     observablePropertiesIDs = serializers.SerializerMethodField()
