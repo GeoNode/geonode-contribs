@@ -16,7 +16,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
-import guardian.shortcuts
 import json
 import re
 from urllib.parse import unquote
@@ -25,7 +24,6 @@ from django.contrib.gis.geos import GEOSGeometry
 from dynamic_rest.serializers import DynamicModelSerializer, DynamicEphemeralSerializer
 from geonode.base.api.serializers import ResourceBaseToRepresentationSerializerMixin
 from geonode.layers.models import Layer
-from geonode.layers.api.serializers import LayerSerializer
 from geonode.services.models import Service
 from rest_framework import serializers
 

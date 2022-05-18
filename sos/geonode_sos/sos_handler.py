@@ -28,7 +28,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext as _
 from geonode import settings
 from geonode.base.bbox_utils import BBOXHelper
-from geonode.base.models import ExtraMetadata, Link
+from geonode.base.models import ExtraMetadata
 from geonode.geoserver.security import set_geowebcache_invalidate_cache
 from geonode.layers.models import Layer
 from geonode.services.enumerations import HARVESTED
