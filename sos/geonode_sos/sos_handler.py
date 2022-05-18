@@ -28,7 +28,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext as _
 from geonode import settings
 from geonode.base.bbox_utils import BBOXHelper
-from geonode.base.models import ExtraMetadata, Link
+from geonode.base.models import ExtraMetadata
 from geonode.geoserver.security import set_geowebcache_invalidate_cache
 from geonode.layers.models import Layer
 from geonode.services.enumerations import HARVESTED
@@ -176,7 +176,6 @@ class SosServiceHandler(ServiceHandlerBase):
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
 
     def _create_layer(self, _resource_as_dict: dict, geonode_service) -> Layer:
-        _ows_url = _resource_as_dict.pop("ows_url")
         _ = _resource_as_dict.pop("keywords") or []
         geonode_layer = Layer(
             owner=geonode_service.owner,
@@ -208,7 +207,7 @@ class SosServiceHandler(ServiceHandlerBase):
 
             # Refresh from DB
             geonode_layer.refresh_from_db()
-        self._create_ows_link(geonode_layer=geonode_layer, _url=_ows_url)
+
         return geonode_layer
 
     def _from_resource_to_layer(self, _resource):
@@ -221,8 +220,7 @@ class SosServiceHandler(ServiceHandlerBase):
             "title": _resource.title,
             "abstract": _resource.abstract,
             "srid": _resource.srs,
-            "keywords": [_resource.title],
-            "ows_url": _resource.id,
+            "keywords": [_resource.title]
         }
         if _resource.bbox:
             payload["bbox_polygon"] = BBOXHelper.from_xy(
@@ -254,20 +252,6 @@ class SosServiceHandler(ServiceHandlerBase):
             country=_provider.country,
             email=_provider.email,
             service=instance,
-        )
-
-    def _create_ows_link(self, geonode_layer: Layer, _url: str) -> None:
-        Link.objects.get_or_create(
-            resource=geonode_layer.resourcebase_ptr,
-            url=_url,
-            name="OGC:WMS",
-            defaults={
-                "extension": "html",
-                "name": f"{geonode_layer.remote_service.type}: {geonode_layer.store} Service",
-                "url": _url,
-                "mime": "text/html",
-                "link_type": f"{geonode_layer.remote_service.type}",
-            },
         )
 
     def _create_obj(self, _id: str, name: str, descr: str) -> NamedTuple:
