@@ -16,34 +16,40 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
+import guardian.shortcuts
 import json
 import re
 from urllib.parse import unquote
 
 from django.contrib.gis.geos import GEOSGeometry
 from dynamic_rest.serializers import DynamicModelSerializer, DynamicEphemeralSerializer
-from geonode.base.api.serializers import ThumbnailUrlField
+from geonode.base.api.serializers import ResourceBaseToRepresentationSerializerMixin
 from geonode.layers.models import Layer
+from geonode.layers.api.serializers import LayerSerializer
 from geonode.services.models import Service
 from rest_framework import serializers
 
 
-class SOSSensorSerializer(DynamicModelSerializer):
+class SOSSensorSerializer(ResourceBaseToRepresentationSerializerMixin, DynamicModelSerializer):
     class Meta:
         model = Layer
+        view_name = 'sensors-list'
         fields = (
             "pk",
             "title",
             "alternate",
             "thumbnail_url",
             "sensor_name",
+            "ptype",
+            "featureinfo_custom_template",
+            "has_time",
+            "perms",
             "sosUrl",
             "offeringsIDs",
             "observablePropertiesIDs",
         )
 
     sensor_name = serializers.SerializerMethodField()
-    thumbnail_url = ThumbnailUrlField()
     sosUrl = serializers.SerializerMethodField()
     offeringsIDs = serializers.SerializerMethodField()
     observablePropertiesIDs = serializers.SerializerMethodField()
@@ -60,6 +66,10 @@ class SOSSensorSerializer(DynamicModelSerializer):
     def get_observablePropertiesIDs(self, obj):
         return [x.metadata.get("definition") for x in obj.extrametadata_set.all()]
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["perms"] = ["view_resourcebase"]
+        return data
 
 class SOSServiceSerializer(DynamicModelSerializer):
     class Meta:

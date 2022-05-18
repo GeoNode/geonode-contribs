@@ -208,7 +208,7 @@ class SosServiceHandler(ServiceHandlerBase):
 
             # Refresh from DB
             geonode_layer.refresh_from_db()
-        self._create_ows_link(geonode_layer=geonode_layer, _url=_ows_url)
+
         return geonode_layer
 
     def _from_resource_to_layer(self, _resource):
@@ -254,20 +254,6 @@ class SosServiceHandler(ServiceHandlerBase):
             country=_provider.country,
             email=_provider.email,
             service=instance,
-        )
-
-    def _create_ows_link(self, geonode_layer: Layer, _url: str) -> None:
-        Link.objects.get_or_create(
-            resource=geonode_layer.resourcebase_ptr,
-            url=_url,
-            name="OGC:WMS",
-            defaults={
-                "extension": "html",
-                "name": f"{geonode_layer.remote_service.type}: {geonode_layer.store} Service",
-                "url": _url,
-                "mime": "text/html",
-                "link_type": f"{geonode_layer.remote_service.type}",
-            },
         )
 
     def _create_obj(self, _id: str, name: str, descr: str) -> NamedTuple:
