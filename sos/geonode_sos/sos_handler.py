@@ -176,7 +176,6 @@ class SosServiceHandler(ServiceHandlerBase):
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
 
     def _create_layer(self, _resource_as_dict: dict, geonode_service) -> Layer:
-        _ows_url = _resource_as_dict.pop("ows_url")
         _ = _resource_as_dict.pop("keywords") or []
         geonode_layer = Layer(
             owner=geonode_service.owner,
@@ -221,8 +220,7 @@ class SosServiceHandler(ServiceHandlerBase):
             "title": _resource.title,
             "abstract": _resource.abstract,
             "srid": _resource.srs,
-            "keywords": [_resource.title],
-            "ows_url": _resource.id,
+            "keywords": [_resource.title]
         }
         if _resource.bbox:
             payload["bbox_polygon"] = BBOXHelper.from_xy(
