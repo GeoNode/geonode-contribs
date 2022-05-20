@@ -17,7 +17,7 @@
 #
 #########################################################################
 from typing import Tuple
-from rest_framework.filters import SearchFilter, BaseFilterBackend
+from rest_framework.filters import SearchFilter
 from django.db.models import Q
 import ast
 
