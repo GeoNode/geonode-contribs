@@ -29,6 +29,7 @@ from geonode_sos.api.serializer import (
     SOSSensorSerializer,
     SOSServiceSerializer,
 )
+from rest_framework.response import Response
 from dynamic_models.models import ModelSchema
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema
@@ -100,6 +101,25 @@ class FeatureOfInterestViewSet(DynamicModelViewSet):
     serializer_class = FeatureOfInterestSerializer
     pagination_class = GeoNodeApiPagination
     http_method_names = ["get"]
+
+    def list(self, request, *args, **kwargs):
+        '''
+        We have to override the list method, otherwise
+        the list of the feature will have None as a key
+        '''
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(self._extract_data(serializer))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(self._extract_data(serializer))
+
+    def _extract_data(self, serializer):
+        if serializer.data.get(None):
+            serializer.data["fois"] = serializer.data.pop(None)
+        return serializer.data
 
     def get_queryset(self, queryset=None):
         """

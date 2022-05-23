@@ -94,7 +94,10 @@ class FeatureOfInterestSerializer(DynamicEphemeralSerializer):
         fields = ("pk", "name")
     
     def to_representation(self, _foi):
-        _foi_resource = Layer.objects.get(id=_foi.resource_id)
+        _foi_resource = Layer.objects.filter(id=_foi.resource_id)
+        if not _foi_resource.exists():
+            return
+        _foi_resource = _foi_resource.get()
         return {
                 "id": _foi.id,
                 "identifier": _foi.identifier,
