@@ -23,9 +23,11 @@ from urllib.parse import unquote
 from django.contrib.gis.geos import GEOSGeometry
 from dynamic_rest.serializers import DynamicModelSerializer, DynamicEphemeralSerializer
 from geonode.base.api.serializers import ResourceBaseToRepresentationSerializerMixin
+from geonode.layers.api.serializers import StyleSerializer
 from geonode.layers.models import Layer
 from geonode.services.models import Service
 from rest_framework import serializers
+from dynamic_rest.fields.fields import DynamicRelationField
 
 
 class SOSSensorSerializer(ResourceBaseToRepresentationSerializerMixin, DynamicModelSerializer):
@@ -45,12 +47,17 @@ class SOSSensorSerializer(ResourceBaseToRepresentationSerializerMixin, DynamicMo
             "sosUrl",
             "offeringsIDs",
             "observablePropertiesIDs",
+            "default_style",
+            "styles"
         )
 
     sensor_name = serializers.SerializerMethodField()
     sosUrl = serializers.SerializerMethodField()
     offeringsIDs = serializers.SerializerMethodField()
     observablePropertiesIDs = serializers.SerializerMethodField()
+
+    default_style = DynamicRelationField(StyleSerializer, embed=True, many=False, read_only=True)
+    styles = DynamicRelationField(StyleSerializer, embed=True, many=True, read_only=True)
 
     def get_sensor_name(self, obj):
         return unquote(obj.name)
