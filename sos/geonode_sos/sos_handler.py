@@ -43,6 +43,8 @@ from geonode_sos.parser import DescribeSensorParser, namespaces
 from dynamic_models.models import ModelSchema
 from django.conf import settings as django_settings
 from django.contrib.gis.db.models import Extent
+from geonode.geoserver.helpers import set_layer_style
+from django.template.loader import render_to_string
 
 from geonode.thumbs.thumbnails import _generate_thumbnail_name, create_thumbnail_from_locations
 from geonode.thumbs.utils import clean_bbox
@@ -159,17 +161,22 @@ class SosServiceHandler(ServiceHandlerBase):
             foi_table_name =  self._set_feature_of_interest(layer, _resource_detail)
             self._set_offerings(layer, _resource_detail)
             self._set_responsibles(layer, _resource_detail)
-            self._publish_data_to_geoserver(foi_table_name)
 
             self._update_alternate(
                 layer=layer,
                 procedure_id=_exists,
                 new_alternate=f'{self.workspace.name}:{foi_table_name}'
             )
-
+            # calculating the FOI polygon as bbox
             _bbox = self._calculate_FOI_polygon_as_bbox(layer=layer)
 
+            # will create a custom style for each FOI layer
+
             self._update_thumbnail(layer=layer, _bbox=_bbox)
+
+            self._publish_data_to_geoserver(foi_table_name)
+
+            self._create_geoserver_style(layer=layer)
 
             set_geowebcache_invalidate_cache(f'{self.workspace.name}:{foi_table_name}')
             return layer
@@ -363,6 +370,7 @@ class SosServiceHandler(ServiceHandlerBase):
         So ones is created we need to update the alternate in the Layer, Harvest and Harvest job tables
         '''
         layer.alternate = new_alternate
+        layer.name = new_alternate.split(":")[1]
         layer.save()
         from geonode.services.models import HarvestJob
 
@@ -433,6 +441,13 @@ class SosServiceHandler(ServiceHandlerBase):
 
         Layer.objects.filter(id=layer.id).update(thumbnail_url=thumb_url)
 
+    def _create_geoserver_style(self, layer):
+        # creation of the style on geoserver
+        name = layer.alternate.split(":")[1]
+        sld = render_to_string('foi_style.sld', {"alternate": name})
+        Layer.objects.filter(id=layer.id).update(workspace=self.workspace.name)
+        layer.refresh_from_db()
+        set_layer_style(saved_layer=layer, title=name, sld=sld)
 
 class HandlerDescriptor:
     services_type = {
