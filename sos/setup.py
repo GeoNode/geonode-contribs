@@ -30,9 +30,12 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     packages=find_packages(),
+    package_data={
+        "geonode_sos": ['templates/*.html', 'templates/layers/*.html']
+    },
     include_package_data=True,
     install_requires=[
         "sos4py==0.3.0",
-        "django-dynamic-model @ git+https://github.com/rvinzent/django-dynamic-models.git@master#egg=dynamic_models"
+        "django-dynamic-model @ git+https://github.com/mattiagiupponi/django-dynamic-models.git@master#egg=dynamic_models"
     ],
 )
