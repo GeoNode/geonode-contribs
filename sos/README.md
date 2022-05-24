@@ -28,15 +28,19 @@ Quick start
 
 1. add this dict in `settings.py` to enable dynamic models
     
-    ```python
+    ```
     DYNAMIC_MODELS = {
         "USE_APP_LABEL": "geonode_sos_foi"
     }
     ```
 
 Run migrations:
-    ```python
+
     python manage.py migrate
- 
     python manage.py migrate --database=datastore
-    ```
+
+Install with PIP:
+
+```
+pip install -e "git+https://github.com/GeoNode/geonode-contribs.git@setup.cfg#subdirectory=sos&egg=geonode-sos"
+```
