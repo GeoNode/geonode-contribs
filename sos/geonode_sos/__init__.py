@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
-VERSION = (0, 0, 1)
+VERSION = (0, 0, 2)
 __version__ = ".".join([str(i) for i in VERSION])
 __author__ = "geosolutions-it"
 __email__ = "info@geosolutionsgroup.com"
