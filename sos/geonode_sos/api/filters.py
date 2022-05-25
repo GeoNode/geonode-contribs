@@ -49,7 +49,7 @@ VIEW_FILTERS_MAPPING = {
 class CustomSensorsFilter(SearchFilter):
 
     def filter_queryset(self, request, queryset, view):
-        _filters = request.GET
+        _filters = [x for x in request.GET if x not in ['page', 'page_size']]
         if not _filters:
             return queryset
 
