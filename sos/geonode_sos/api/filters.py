@@ -42,14 +42,15 @@ VIEW_FILTERS_MAPPING = {
         "sensor_name": "name__icontains",
         "observable_property": "extrametadata__metadata__definition__icontains",
         "property_label": "extrametadata__metadata__field_label__icontains",
-    }
+    },
 }
 
 
 class CustomSensorsFilter(SearchFilter):
-
     def filter_queryset(self, request, queryset, view):
-        _filters = [x for x in request.GET if x not in ['page', 'page_size']]
+        _filters = {
+            k: v for k, v in request.GET.items() if k not in ["page", "page_size"]
+        }
         if not _filters:
             return queryset
 
@@ -64,24 +65,52 @@ class CustomSensorsFilter(SearchFilter):
         observable_property_label = _filters.pop("property_label", None)
         or_filters = Q()
         and_filters = {}
-        _field_filters = VIEW_FILTERS_MAPPING.get(view.basename, VIEW_FILTERS_MAPPING.get('default'))
+        _field_filters = VIEW_FILTERS_MAPPING.get(
+            view.basename, VIEW_FILTERS_MAPPING.get("default")
+        )
 
-        if title and sensor_name and view.basename == 'sensors':
-            or_filters |= Q(**{_field_filters.get('sensor_title'):title[0]})
-            or_filters |= Q(**{_field_filters.get('sensor_name'):sensor_name[0]})
+        if title and sensor_name and view.basename == "sensors":
+            or_filters |= Q(
+                **{
+                    _field_filters.get("sensor_title"): title[0]
+                    if isinstance(title, list)
+                    else title
+                }
+            )
+            or_filters |= Q(
+                **{
+                    _field_filters.get("sensor_name"): sensor_name[0]
+                    if isinstance(sensor_name, list)
+                    else sensor_name
+                }
+            )
         else:
             if title:
-                and_filters[_field_filters.get('sensor_title')] = title[0]
+                and_filters[_field_filters.get("sensor_title")] = (
+                    title[0] if isinstance(title, list) else title
+                )
             if sensor_name:
-                and_filters[_field_filters.get('sensor_name')] = sensor_name[0]
+                and_filters[_field_filters.get("sensor_name")] = (
+                    sensor_name[0] if isinstance(sensor_name, list) else sensor_name
+                )
 
-        if observable_property_label and view.basename == 'observable':
-            and_filters[_field_filters.get('property_label')] = observable_property_label[0]
+        if observable_property_label and view.basename == "observable":
+            and_filters[_field_filters.get("property_label")] = (
+                observable_property_label[0]
+                if isinstance(observable_property_label, list)
+                else observable_property_label
+            )
 
         if sos_url:
-            and_filters[_field_filters.get('sos_url')] = sos_url[0]            
+            and_filters[_field_filters.get("sos_url")] = (
+                sos_url[0] if isinstance(sos_url, list) else sos_url
+            )
         if observable_property:
-            and_filters[_field_filters.get('observable_property')] = observable_property[0]
+            and_filters[_field_filters.get("observable_property")] = (
+                observable_property[0]
+                if isinstance(observable_property, list)
+                else observable_property
+            )
 
         # generating the other filters dynamically
         for _key, _value in _filters.items():
