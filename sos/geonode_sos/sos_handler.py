@@ -64,7 +64,7 @@ class SosServiceHandler(ServiceHandlerBase):
         self.indexing_method = HARVESTED
         self.content_response = None
         self.name = slugify(self.url)[:255]
-        self.workspace = get_geoserver_cascading_workspace(create=False)
+        self.workspace = get_geoserver_cascading_workspace(create=True)
 
     @property
     def parsed_service(self):
@@ -171,10 +171,9 @@ class SosServiceHandler(ServiceHandlerBase):
             _bbox = self._calculate_FOI_polygon_as_bbox(layer=layer)
 
             # will create a custom style for each FOI layer
+            self._publish_data_to_geoserver(foi_table_name)
 
             self._update_thumbnail(layer=layer, _bbox=_bbox)
-
-            self._publish_data_to_geoserver(foi_table_name)
 
             self._create_geoserver_style(layer=layer)
 
