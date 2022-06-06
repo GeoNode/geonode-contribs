@@ -101,8 +101,7 @@ def overwrite_harvest_resources_handle_get(request, service, handler):
         harvestable_resources = paginator.page(paginator.num_pages)
 
     filter_row = [{}, {"id": 'id-filter', "data_key": "id"},
-                  {"id": 'name-filter', "data_key": "title"},
-                  {"id": 'desc-filter', "data_key": "abstract"}]
+                  {"id": 'name-filter', "data_key": "title"},]
     result = render(
         request,
         "services/service_resources_harvest.html",
