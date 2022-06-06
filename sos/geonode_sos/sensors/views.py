@@ -26,6 +26,9 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from geonode.services import enumerations
 from geonode.services.views import harvest_resources_handle_get, harvest_resources_handle_post
 
+from geonode_sos.parser import DescribeSensorParser
+from geonode_sos.sos_handler import call_describe_sensor
+
 
 
 def layer_detail(request, layername, template='layers/layer_detail.html'):
@@ -67,6 +70,15 @@ def harvest_resources(request, service_id):
         return harvest_resources_handle_post(request, service, handler)
 
 
+def enrich_sensor_with_name(value, service_url):
+    _xml = call_describe_sensor(service_url, value.id)
+    # getting the metadata needed
+    parser = DescribeSensorParser(
+        _xml, sos_service=service_url, procedure_id=value
+    )
+    return parser.get_short_name()
+
+
 def overwrite_harvest_resources_handle_get(request, service, handler):
     available_resources = handler.get_resources()
     is_sync = getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False)
@@ -102,6 +114,11 @@ def overwrite_harvest_resources_handle_get(request, service, handler):
 
     filter_row = [{}, {"id": 'id-filter', "data_key": "id"},
                   {"id": 'name-filter', "data_key": "title"},]
+
+    _service_url = [service.service_url]*len(harvestable_resources.object_list)
+
+    resource_to_render = list(map(enrich_sensor_with_name, harvestable_resources.object_list, _service_url))
+
     result = render(
         request,
         "services/service_resources_harvest.html",
@@ -109,7 +126,7 @@ def overwrite_harvest_resources_handle_get(request, service, handler):
             "service_handler": handler,
             "service": service,
             "importable": not_yet_harvested,
-            "resources": harvestable_resources,
+            "resources": resource_to_render,
             "requested": request.GET.getlist("resource_list"),
             "is_sync": is_sync,
             "errored_state": errored_state,

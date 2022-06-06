@@ -53,6 +53,24 @@ from geonode.thumbs.utils import clean_bbox
 logger = logging.getLogger(__name__)
 
 
+
+def call_describe_sensor(service_url, single_procedure, description_format="http://www.opengis.net/sensorml/2.0"):
+    query_params = {
+        "service": "SOS",
+        "version": "2.0.0",
+        "request": "DescribeSensor",
+        "procedure": f"{single_procedure}",
+        "procedureDescriptionFormat": description_format
+    }
+
+    parsed_url = urlparse(service_url)
+    clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+    clean_url += '?' + urlencode(query_params)
+
+    _xml = requests.get(clean_url).content
+    return _xml
+
+
 class SosServiceHandler(ServiceHandlerBase):
 
     service_type = "SOS"
@@ -290,13 +308,14 @@ class SosServiceHandler(ServiceHandlerBase):
             ],
         )
 
-        _xml = self._call_describe_sensor(single_procedure)
+        _xml = call_describe_sensor(self.url, single_procedure)
         # getting the metadata needed
         parser = DescribeSensorParser(
             _xml, sos_service=self.url, procedure_id=single_procedure
         )
         if not parser.is_valid():
-            _xml = self._call_describe_sensor(
+            _xml = call_describe_sensor(
+                self.url,
                 single_procedure,
                 description_format="http://www.opengis.net/sensorML/1.0.1"
             )
@@ -317,22 +336,6 @@ class SosServiceHandler(ServiceHandlerBase):
             extra=parser.get_extra_metadata(),
             sensor_responsible=parser.get_sensor_responsible()
         )
-
-    def _call_describe_sensor(self, single_procedure, description_format="http://www.opengis.net/sensorml/2.0"):
-        query_params = {
-            "service": "SOS",
-            "version": "2.0.0",
-            "request": "DescribeSensor",
-            "procedure": f"{single_procedure}",
-            "procedureDescriptionFormat": description_format
-        }
-
-        parsed_url = urlparse(self.url)
-        clean_url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
-        clean_url += '?' + urlencode(query_params)
-
-        _xml = requests.get(clean_url).content
-        return _xml
 
     def _set_extra_metadata(self, layer, _resource_detail):
         for mdata in _resource_detail.extra:
