@@ -76,7 +76,8 @@ def enrich_sensor_with_name(value, service_url):
     parser = DescribeSensorParser(
         _xml, sos_service=service_url, procedure_id=value
     )
-    return parser.get_short_name()
+    value.title = parser.get_short_name() 
+    return value
 
 
 def overwrite_harvest_resources_handle_get(request, service, handler):
