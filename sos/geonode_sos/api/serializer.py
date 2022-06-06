@@ -37,6 +37,7 @@ class SOSSensorSerializer(ResourceBaseToRepresentationSerializerMixin, DynamicMo
         fields = (
             "pk",
             "title",
+            "sensorId",
             "alternate",
             "thumbnail_url",
             "sensor_name",
@@ -52,6 +53,7 @@ class SOSSensorSerializer(ResourceBaseToRepresentationSerializerMixin, DynamicMo
         )
 
     sensor_name = serializers.SerializerMethodField()
+    sensorId = serializers.SerializerMethodField()
     sosUrl = serializers.SerializerMethodField()
     offeringsIDs = serializers.SerializerMethodField()
     observablePropertiesIDs = serializers.SerializerMethodField()
@@ -61,6 +63,9 @@ class SOSSensorSerializer(ResourceBaseToRepresentationSerializerMixin, DynamicMo
 
     def get_sensor_name(self, obj):
         return unquote(obj.name)
+
+    def get_sensorId(self, obj):
+        return obj.supplemental_information
 
     def get_sosUrl(self, obj):
         return Service.objects.get(layer=obj).base_url

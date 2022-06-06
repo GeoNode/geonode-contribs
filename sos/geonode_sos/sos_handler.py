@@ -370,6 +370,8 @@ class SosServiceHandler(ServiceHandlerBase):
         '''
         layer.alternate = new_alternate
         layer.name = new_alternate.split(":")[1]
+        layer.supplemental_information = procedure_id
+        layer.supplemental_information_en = procedure_id
         layer.save()
         from geonode.services.models import HarvestJob
 
