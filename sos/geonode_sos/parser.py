@@ -22,8 +22,9 @@ import xml.etree.ElementTree as ET
 from typing import List, Optional
 from urllib.parse import urlencode, urlparse
 from geonode.base.bbox_utils import polygon_from_bbox
+from numpy import isin
 import requests
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Point, LineString, Polygon
 from owslib.namespaces import Namespaces
 from osgeo import ogr, osr
 logger = logging.getLogger(__name__)
@@ -181,8 +182,15 @@ class DescribeSensorParser:
                 geometry = GEOSGeometry.from_gml(_gml.groups()[0])
                 inverted = ogr.CreateGeometryFromWkt(geometry.wkt)
                 inverted.Transform(transform)
-                
-                foi_geometry = polygon_from_bbox(GEOSGeometry.from_ewkt(inverted.ExportToWkt()).extent)
+                inverted_geometry = GEOSGeometry.from_ewkt(inverted.ExportToWkt())
+                if isinstance(inverted_geometry, Point):
+                    foi_geometry = polygon_from_bbox(inverted_geometry.extent)
+                elif isinstance(inverted_geometry, Polygon):
+                    foi_geometry = inverted_geometry
+                elif isinstance(inverted_geometry, LineString):
+                    foi_geometry = inverted_geometry.buffer(0.00000015)
+                else:
+                    foi_geometry = inverted_geometry
             else:
                 logger.error(f"Geometry not found for {self.procedure_id}")
 
