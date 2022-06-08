@@ -31,7 +31,7 @@ setup(
     ],
     packages=find_packages(),
     package_data={
-        "geonode_sos": ['templates/*.html', 'templates/layers/*.html']
+        "geonode_sos": ['templates/*.html', 'templatetags/*.py', 'templates/layers/*.html', 'templates/search/*.html']
     },
     include_package_data=True,
     install_requires=[
