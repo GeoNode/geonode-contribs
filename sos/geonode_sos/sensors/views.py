@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #########################################################################
+from collections import namedtuple
 from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -71,13 +72,13 @@ def harvest_resources(request, service_id):
 
 
 def enrich_sensor_with_name(value, service_url):
+    SOSLayer = namedtuple("SosLayer", ["id", "title", "abstract"])
     _xml = call_describe_sensor(service_url, value.id)
     # getting the metadata needed
     parser = DescribeSensorParser(
         _xml, sos_service=service_url, procedure_id=value
     )
-    value.title = parser.get_short_name() 
-    return value
+    return SOSLayer(value.id, parser.get_short_name() , parser.get_long_name())
 
 
 def overwrite_harvest_resources_handle_get(request, service, handler):
@@ -92,7 +93,7 @@ def overwrite_harvest_resources_handle_get(request, service, handler):
         service.get_self_resource().get_user_perms(request.user)
         .union(service.get_user_perms(request.user))
     )
-    already_harvested = Layer.objects.values_list("name", flat=True)\
+    already_harvested = Layer.objects.values_list("supplemental_information", flat=True)\
         .filter(resource_type="sos_sensor", remote_service=service, remote_service__harvestjob__status=enumerations.PROCESSED)\
         .distinct()
 
