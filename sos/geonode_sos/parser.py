@@ -22,7 +22,6 @@ import xml.etree.ElementTree as ET
 from typing import List, Optional
 from urllib.parse import urlencode, urlparse
 from geonode.base.bbox_utils import polygon_from_bbox
-from numpy import isin
 import requests
 from django.contrib.gis.geos import GEOSGeometry, Point, LineString, Polygon
 from owslib.namespaces import Namespaces
