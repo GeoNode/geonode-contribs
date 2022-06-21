@@ -22,6 +22,7 @@ import re
 from collections import namedtuple
 from typing import NamedTuple
 from uuid import uuid4
+import os
 
 import requests
 from django.template.defaultfilters import slugify
@@ -390,10 +391,11 @@ class SosServiceHandler(ServiceHandlerBase):
             username=settings.OGC_SERVER_DEFAULT_USER,
             password=settings.OGC_SERVER_DEFAULT_PASSWORD
         )
-        store = cat.get_store(name='geonode_data', workspace=self.workspace)
+        geodatabase = os.environ.get('GEONODE_GEODATABASE', 'geonode_data')
+        store = cat.get_store(name=geodatabase, workspace=self.workspace)
 
         if not store:
-            raise Exception(f"The store does not exists: geonode_data")
+            raise Exception(f"The store does not exists: {geodatabase}")
 
         try:
             cat.publish_featuretype(
