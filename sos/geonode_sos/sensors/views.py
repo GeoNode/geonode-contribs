@@ -129,6 +129,7 @@ def overwrite_harvest_resources_handle_get(request, service, handler):
             "service": service,
             "importable": not_yet_harvested,
             "resources": resource_to_render,
+            "all_resources": harvestable_resources,
             "requested": request.GET.getlist("resource_list"),
             "is_sync": is_sync,
             "errored_state": errored_state,
