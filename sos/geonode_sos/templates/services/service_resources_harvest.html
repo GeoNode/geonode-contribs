@@ -79,21 +79,21 @@
                             </div>
                         </div>
                     </form>
-                    {% if resources.paginator.num_pages > 1 %}
+                    {% if all_resources.paginator.num_pages > 1 %}
                         <div class="row">
                             <nav aria-label="importable resources pages">
                                 <ul class="pagination hidden-xs pull-right">
-                                    {% if resources.has_previous %}
+                                    {% if all_resources.has_previous %}
                                         <li><a id="previous" aria-label="{% trans "Previous" %}"
-                                               href="?page={{ resources.previous_page_number }}">{% trans "previous" %}</a></li>
+                                               href="?page={{ all_resources.previous_page_number }}">{% trans "previous" %}</a></li>
                                     {% else %}
                                         <li class="disabled"><a aria-label="{% trans "Previous" %}" href="#">{% trans "previous" %}</a></li>
                                     {% endif %}
                                     <li class="active"><a
-                                            href="#">{{ resources.number }}/{{ resources.paginator.num_pages }}</a></li>
-                                    {% if resources.has_next %}
+                                            href="#">{{ all_resources.number }}/{{ all_resources.paginator.num_pages }}</a></li>
+                                    {% if all_resources.has_next %}
                                         <li><a id="next" aria-label="{% trans "Next" %}"
-                                               href="?page={{ resources.next_page_number }}">{% trans "next" %}</a></li>
+                                               href="?page={{ all_resources.next_page_number }}">{% trans "next" %}</a></li>
                                     {% else %}
                                         <li class="disabled"><a aria-label="{% trans "Next" %}" href="#">{% trans "next" %}</a></li>
                                     {% endif %}
