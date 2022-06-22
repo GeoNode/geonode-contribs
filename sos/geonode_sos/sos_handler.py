@@ -197,6 +197,8 @@ class SosServiceHandler(ServiceHandlerBase):
             self._create_geoserver_style(layer=layer)
 
             set_geowebcache_invalidate_cache(f'{self.workspace.name}:{foi_table_name}')
+            layer.refresh_from_db()
+            layer.set_permissions(perm_spec={'users': {'AnonymousUser': ['view_resourcebase', 'download_resourcebase']}, 'groups': {}})
             return layer
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
 
