@@ -50,7 +50,7 @@ from geonode.geoserver.security import purge_geofence_layer_rules
 
 from geonode.thumbs.thumbnails import _generate_thumbnail_name, create_thumbnail_from_locations
 from geonode.thumbs.utils import clean_bbox
-
+from geonode.geoserver.security import _update_geofence_rule
 
 logger = logging.getLogger(__name__)
 
@@ -201,9 +201,26 @@ class SosServiceHandler(ServiceHandlerBase):
 
             set_geowebcache_invalidate_cache(f'{self.workspace.name}:{foi_table_name}')
             layer.refresh_from_db()
-            layer.set_permissions(perm_spec={'users': {'AnonymousUser': ['view_resourcebase', 'download_resourcebase']}, 'groups': {}})
+            self._set_geofence_permissions(layer, foi_table_name)
             return layer
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
+
+    def _set_geofence_permissions(self, layer, foi_table_name):
+        layer.set_default_permissions()
+        geofence_rule = {
+                "TRANSACTION": False,
+                "LOCKFEATURE": False,
+                "GETFEATUREWITHLOCK": False
+            }
+        for request, enabled in geofence_rule.items():
+            _update_geofence_rule(
+                    layer,
+                    f'{foi_table_name}',
+                    layer.workspace,
+                    "WFS",
+                    request=request, allow=enabled, priority=0
+                )
+
 
     def _create_layer(self, _resource_as_dict: dict, geonode_service) -> Layer:
         _ = _resource_as_dict.pop("keywords") or []
