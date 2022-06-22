@@ -46,6 +46,7 @@ from django.conf import settings as django_settings
 from django.contrib.gis.db.models import Extent
 from geonode.geoserver.helpers import set_layer_style
 from django.template.loader import render_to_string
+from geonode.geoserver.security import purge_geofence_layer_rules
 
 from geonode.thumbs.thumbnails import _generate_thumbnail_name, create_thumbnail_from_locations
 from geonode.thumbs.utils import clean_bbox
@@ -180,6 +181,8 @@ class SosServiceHandler(ServiceHandlerBase):
             foi_table_name =  self._set_feature_of_interest(layer, _resource_detail)
             self._set_offerings(layer, _resource_detail)
             self._set_responsibles(layer, _resource_detail)
+
+            purge_geofence_layer_rules(layer.get_real_instance())
 
             self._update_alternate(
                 layer=layer,
