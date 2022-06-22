@@ -44,12 +44,13 @@ from geonode_sos.parser import DescribeSensorParser, namespaces
 from dynamic_models.models import ModelSchema
 from django.conf import settings as django_settings
 from django.contrib.gis.db.models import Extent
-from geonode.geoserver.helpers import set_layer_style
+from geonode.geoserver.helpers import set_layer_style, create_geoserver_db_featurestore
 from django.template.loader import render_to_string
+from geonode.geoserver.security import purge_geofence_layer_rules
 
 from geonode.thumbs.thumbnails import _generate_thumbnail_name, create_thumbnail_from_locations
 from geonode.thumbs.utils import clean_bbox
-
+from geonode.geoserver.security import _update_geofence_rule
 
 logger = logging.getLogger(__name__)
 
@@ -181,6 +182,8 @@ class SosServiceHandler(ServiceHandlerBase):
             self._set_offerings(layer, _resource_detail)
             self._set_responsibles(layer, _resource_detail)
 
+            purge_geofence_layer_rules(layer.get_real_instance())
+
             self._update_alternate(
                 layer=layer,
                 procedure_id=_exists,
@@ -197,8 +200,27 @@ class SosServiceHandler(ServiceHandlerBase):
             self._create_geoserver_style(layer=layer)
 
             set_geowebcache_invalidate_cache(f'{self.workspace.name}:{foi_table_name}')
+            layer.refresh_from_db()
+            self._set_geofence_permissions(layer, foi_table_name)
             return layer
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
+
+    def _set_geofence_permissions(self, layer, foi_table_name):
+        layer.set_default_permissions()
+        geofence_rule = {
+                "TRANSACTION": False,
+                "LOCKFEATURE": False,
+                "GETFEATUREWITHLOCK": False
+            }
+        for request, enabled in geofence_rule.items():
+            _update_geofence_rule(
+                    layer,
+                    f'{foi_table_name}',
+                    layer.workspace,
+                    "WFS",
+                    request=request, allow=enabled, priority=0
+                )
+
 
     def _create_layer(self, _resource_as_dict: dict, geonode_service) -> Layer:
         _ = _resource_as_dict.pop("keywords") or []
@@ -395,7 +417,8 @@ class SosServiceHandler(ServiceHandlerBase):
         store = cat.get_store(name=geodatabase, workspace=self.workspace)
 
         if not store:
-            raise Exception(f"The store does not exists: {geodatabase}")
+            logger.info(f"The store does not exists: {geodatabase} creating...")
+            store = create_geoserver_db_featurestore(store_name=geodatabase, workspace=self.workspace.name)
 
         try:
             cat.publish_featuretype(
