@@ -201,6 +201,9 @@ class SosServiceHandler(ServiceHandlerBase):
 
             set_geowebcache_invalidate_cache(f'{self.workspace.name}:{foi_table_name}')
             layer.refresh_from_db()
+            # the layer has type remoteStore, so the WFS rules for Geofence wouldn't be calculated
+            # and the * rule would admit WFS-T requests on the layer. Here we force the DENY for WFS-T
+            # and push the rules at the top.
             self._set_geofence_permissions(layer, foi_table_name)
             return layer
         raise RuntimeError(f"Resource {resource_id} cannot be harvested")
