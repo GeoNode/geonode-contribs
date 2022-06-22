@@ -44,7 +44,7 @@ from geonode_sos.parser import DescribeSensorParser, namespaces
 from dynamic_models.models import ModelSchema
 from django.conf import settings as django_settings
 from django.contrib.gis.db.models import Extent
-from geonode.geoserver.helpers import set_layer_style
+from geonode.geoserver.helpers import set_layer_style, create_geoserver_db_featurestore
 from django.template.loader import render_to_string
 from geonode.geoserver.security import purge_geofence_layer_rules
 
@@ -420,7 +420,8 @@ class SosServiceHandler(ServiceHandlerBase):
         store = cat.get_store(name=geodatabase, workspace=self.workspace)
 
         if not store:
-            raise Exception(f"The store does not exists: {geodatabase}")
+            logger.info(f"The store does not exists: {geodatabase} creating...")
+            store = create_geoserver_db_featurestore(store_name=geodatabase, workspace=self.workspace.name)
 
         try:
             cat.publish_featuretype(
