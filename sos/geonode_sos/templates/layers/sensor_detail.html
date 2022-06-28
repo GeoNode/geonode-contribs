@@ -46,7 +46,9 @@
     </style>
 
     <h2 class="page-title">{{ resource.title|default:resource.alternate }}</h2>
-    {% if storeType == 'remoteStore' %}
+    {% if resource.resource_type == 'sos_sensor' %}
+       {{ resource.supplemental_information|escape|urlize|linebreaks|safe }}
+    {% elif storeType == 'remoteStore' %}
     <em>
       <i class="fa fa-power-off {% if online %}text-success{% else %}text-danger{% endif %}"></i> {% trans "Service is" %} {% if online %}{% trans "online" %}{% else %}{% trans "offline" %}{% endif %} 
     </em>
