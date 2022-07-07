@@ -1,0 +1,10 @@
+{% extends "admin/change_list.html" %}
+
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    <li>
+        <a href="{% url 'keycloakrole:synchronize_roles' %}" class="sync-roles grp-state-focus">{% trans "Sync Roles" %}</a>
+    </li>
+    {{ block.super }}
+{% endblock %}

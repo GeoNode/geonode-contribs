@@ -1,5 +1,4 @@
-include LICENSE
-include README.rst
+include README.md
 recursive-include keycloakrole/static *
 recursive-include keycloakrole/templates *
 recursive-include keycloakrole/templatetags *

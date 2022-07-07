@@ -2,19 +2,15 @@
 
 {% block head %}
 {% load keycloak_tags %}
-    <script src="{% get_base %}/auth/js/keycloak.js"></script>
+    {% if keycloak_url and keycloak_realm and keycloak_client %}
+    <script src="{% keycloak_url %}/js/keycloak.js"></script>
     <script>
-        let body = document.getElementsByTagName("body");
-        body.onload = initKeycloak();
-
-        function initKeycloak() {
-            var keycloak = new Keycloak({
-                url: '{% get_base %}/auth/',
-                realm: '{% get_realm %}',
-                clientId: '{% get_client %}'
-            });
-
-            keycloak.init({
+        document.getElementsByTagName("body").onload = () =>
+            new Keycloak({
+                url: '{% keycloak_url %}',
+                realm: '{% keycloak_realm %}',
+                clientId: '{% keycloak_client %}'
+            }).init({
                 onLoad: 'check-sso',
                 silentCheckSsoRedirectUri: window.location.origin + '/static/silent-check-sso.html'
             }).then(function(authenticated) {
@@ -25,5 +21,6 @@
             );
         }
     </script>
+    {% endif %}
     {{ block.super }}
 {% endblock %}
