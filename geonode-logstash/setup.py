@@ -27,7 +27,7 @@ setup(
         'Programming Language :: Python :: 3.7'
     ],
     install_requires=[
-        'six==1.15.0',
+        'six>=1.15.0',
         'python-logstash-async>=1.5.1,<2.0.0'
     ]
 )
