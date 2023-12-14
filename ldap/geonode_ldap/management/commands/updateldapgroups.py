@@ -98,7 +98,10 @@ class Command(BaseCommand):
             group_name = b" ".join(
                 attributes[group_name_attribute]).decode("utf-8")
             # group_name = slugify(" ".join(attributes[group_name_attribute]))
-            description = b" ".join(
+            if (isinstance(attributes.get("description", group_name), str)):
+              description = " ".join(attributes.get("description", group_name))
+            else:
+              description = b" ".join(
                 attributes.get("description", group_name)).decode("utf-8")
             truncated_name = group_name[:50]
             if truncated_name != group_name:
