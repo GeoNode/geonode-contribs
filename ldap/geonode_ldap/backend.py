@@ -269,13 +269,16 @@ def replace_user_groups(user, group_profiles):
 
 
 def remove_user_memberships(user):
-    """Remove user from all ``GroupMember`` instances and django groups
-
+    """Remove user from all GroupMember instances and Django groups.
+    
+    This function cleans up a user's group memberships before reassigning
+    new ones based on LDAP. 
     """
-
+    
     existing_group_profile_memberships = GroupMember.objects.filter(
         user=user).values_list("group__slug", flat=True)
-    user.groups.filter(name__in=existing_group_profile_memberships).delete()
+    groups_to_remove = user.groups.filter(name__in=existing_group_profile_memberships)
+    user.groups.remove(*groups_to_remove)
     GroupMember.objects.filter(user=user).delete()
 
 
